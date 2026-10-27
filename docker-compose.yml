@@ -1,15 +1,15 @@
 services:
   db:
-    image: postgres:14
-    container_name: bodegas_db
+    image: postgres:16
+    container_name: bodegas_atuel_db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secreto_super_seguro}
-      POSTGRES_DB: bodegas_del_atuel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev
+      POSTGRES_DB: bodegas_atuel
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
+  postgres_data:
