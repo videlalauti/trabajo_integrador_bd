@@ -31,7 +31,7 @@ BEGIN
                       INTO v_cuenta, v_suma
                       FROM vino_cepa
                      WHERE cod_vino = OLD.cod_vino;
-                    IF v_cuenta < 1 OR ABS(v_suma - 100) > 0.01 THEN
+                    IF v_cuenta < 1 OR v_suma <> 100 THEN
                         RAISE EXCEPTION 'RN-05: el vino % debe tener al menos una cepa y la suma de porcentajes debe ser 100 (actual: % filas, suma %)', 
                             OLD.cod_vino, v_cuenta, v_suma;
                     END IF;
@@ -61,7 +61,7 @@ BEGIN
       FROM vino_cepa
      WHERE cod_vino = v_cod_vino;
 
-    IF v_cuenta < 1 OR ABS(v_suma - 100) > 0.01 THEN
+    IF v_cuenta < 1 OR v_suma <> 100 THEN
         RAISE EXCEPTION 'RN-05: el vino % debe tener al menos una cepa y la suma de porcentajes debe ser 100 (actual: % filas, suma %)', 
             v_cod_vino, v_cuenta, v_suma;
     END IF;
@@ -170,26 +170,49 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     v_estado estado_documento;
-    v_existe BOOLEAN;
+    v_id INTEGER;
 BEGIN
-    SELECT EXISTS(SELECT 1 FROM ingreso WHERE cod_ingreso = OLD.cod_ingreso) INTO v_existe;
-    IF NOT v_existe THEN
+    -- OLD no esta disponible en INSERT; NEW no esta disponible en DELETE.
+    IF TG_OP = 'DELETE' THEN
+        v_id := OLD.cod_ingreso;
+    ELSE
+        v_id := NEW.cod_ingreso;
+    END IF;
+
+    SELECT estado INTO v_estado
+      FROM ingreso
+     WHERE cod_ingreso = v_id
+       FOR UPDATE;
+
+    IF NOT FOUND THEN
+        -- Conserva la excepcion historica para DELETE cuando la cabecera
+        -- ya no existe (borrado en cascada realizado por procedimientos).
         IF TG_OP = 'DELETE' THEN
             RETURN OLD;
         END IF;
-        RETURN NEW;
+        RAISE EXCEPTION 'RN-12: ingreso sin cabecera existente';
     END IF;
-    
-    SELECT estado INTO v_estado
-      FROM ingreso
-     WHERE cod_ingreso = COALESCE(NEW.cod_ingreso, OLD.cod_ingreso)
-       FOR UPDATE;
-    
+
     IF v_estado <> 'en_confeccion' THEN
-        RAISE EXCEPTION 'RN-12: no se pueden agregar, modificar ni quitar renglones de un ingreso que no esta en confeccion';
+        RAISE EXCEPTION 'RN-12: no se pueden modificar renglones de ingreso fuera de confeccion';
     END IF;
-    
-    RETURN COALESCE(NEW, OLD);
+
+    -- Si un UPDATE mueve el renglon a otra cabecera, validar tambien
+    -- el documento de origen para evitar eludir RN-12.
+    IF TG_OP = 'UPDATE' AND OLD.cod_ingreso IS DISTINCT FROM NEW.cod_ingreso THEN
+        SELECT estado INTO v_estado
+          FROM ingreso
+         WHERE cod_ingreso = OLD.cod_ingreso
+           FOR UPDATE;
+        IF NOT FOUND OR v_estado <> 'en_confeccion' THEN
+            RAISE EXCEPTION 'RN-12: cabecera de origen de ingreso fuera de confeccion';
+        END IF;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
 END;
 $$;
 
@@ -204,26 +227,49 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     v_estado estado_documento;
-    v_existe BOOLEAN;
+    v_id INTEGER;
 BEGIN
-    SELECT EXISTS(SELECT 1 FROM transferencia WHERE nro_solicitud = OLD.nro_solicitud) INTO v_existe;
-    IF NOT v_existe THEN
-        IF TG_OP = 'DELETE' THEN
-            RETURN OLD;
-        END IF;
-        RETURN NEW;
+    -- OLD no esta disponible en INSERT; NEW no esta disponible en DELETE.
+    IF TG_OP = 'DELETE' THEN
+        v_id := OLD.nro_solicitud;
+    ELSE
+        v_id := NEW.nro_solicitud;
     END IF;
 
     SELECT estado INTO v_estado
       FROM transferencia
-     WHERE nro_solicitud = COALESCE(NEW.nro_solicitud, OLD.nro_solicitud)
+     WHERE nro_solicitud = v_id
        FOR UPDATE;
-    
-    IF v_estado <> 'en_confeccion' THEN
-        RAISE EXCEPTION 'RN-12: no se pueden agregar, modificar ni quitar renglones de una transferencia que no esta en confeccion';
+
+    IF NOT FOUND THEN
+        -- Conserva la excepcion historica para DELETE cuando la cabecera
+        -- ya no existe (borrado en cascada realizado por procedimientos).
+        IF TG_OP = 'DELETE' THEN
+            RETURN OLD;
+        END IF;
+        RAISE EXCEPTION 'RN-12: transferencia sin cabecera existente';
     END IF;
-    
-    RETURN COALESCE(NEW, OLD);
+
+    IF v_estado <> 'en_confeccion' THEN
+        RAISE EXCEPTION 'RN-12: no se pueden modificar renglones de transferencia fuera de confeccion';
+    END IF;
+
+    -- Si un UPDATE mueve el renglon a otra cabecera, validar tambien
+    -- el documento de origen para evitar eludir RN-12.
+    IF TG_OP = 'UPDATE' AND OLD.nro_solicitud IS DISTINCT FROM NEW.nro_solicitud THEN
+        SELECT estado INTO v_estado
+          FROM transferencia
+         WHERE nro_solicitud = OLD.nro_solicitud
+           FOR UPDATE;
+        IF NOT FOUND OR v_estado <> 'en_confeccion' THEN
+            RAISE EXCEPTION 'RN-12: cabecera de origen de transferencia fuera de confeccion';
+        END IF;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
 END;
 $$;
 
@@ -236,12 +282,12 @@ CREATE TRIGGER trg_renglon_transferencia_estado
 -- 6) VENTAS: COMPROBANTE Y RENGLONES
 --    - Descuento ya viene en renglon (corresponde al cliente). No aplicar
 --      nuevamente en cabecera.
---    - Subtotal de renglon sigue misma formula que fn_total_comprobante.
---    - INSERT: validar/descontar stock_sala, calcular subtotal renglon.
---    - UPDATE: ajustar stock por delta, recalcular.
+--    - Subtotal neto de renglon sigue misma formula que fn_total_comprobante.
+--    - BEFORE INSERT: validar/descontar stock_sala y calcular subtotal del renglon.
+--    - UPDATE: ajustar stock por delta; totales AFTER.
 --    - DELETE directo de renglon: devolver stock. DELETE de comprobante
 --      completo (D1): no devolver stock (cabecera no existe en cascade).
---    - Cabecera: recalcular totales con fn_total_comprobante (VOLATILE),
+--    - Cabecera: fn_total_comprobante (VOLATILE) en AFTER de renglones,
 --      bloquear cambio de id_cliente/id_sala si hay renglones.
 CREATE OR REPLACE FUNCTION fn_trg_comprobante_totales()
 RETURNS TRIGGER
@@ -341,12 +387,6 @@ BEGIN
             RAISE EXCEPTION 'RN-09: No existe stock del vino % en la sala %', NEW.cod_vino, v_id_sala;
         END IF;
         
-        UPDATE comprobante
-           SET subtotal = s.o_subtotal,
-               descuento = s.o_descuento,
-               total = s.o_total
-          FROM fn_total_comprobante(NEW.nro_comprobante) s
-         WHERE nro_comprobante = NEW.nro_comprobante;
         
         RETURN NEW;
         
@@ -392,12 +432,6 @@ BEGIN
             END IF;
         END IF;
         
-        UPDATE comprobante
-           SET subtotal = s.o_subtotal,
-               descuento = s.o_descuento,
-               total = s.o_total
-          FROM fn_total_comprobante(NEW.nro_comprobante) s
-         WHERE nro_comprobante = NEW.nro_comprobante;
         
         RETURN NEW;
         
@@ -413,12 +447,6 @@ BEGIN
                SET cantidad = cantidad + OLD.cantidad
              WHERE id_sala = v_id_sala AND cod_vino = OLD.cod_vino;
             
-            UPDATE comprobante
-               SET subtotal = s.o_subtotal,
-                   descuento = s.o_descuento,
-                   total = s.o_total
-              FROM fn_total_comprobante(OLD.nro_comprobante) s
-             WHERE nro_comprobante = OLD.nro_comprobante;
         ELSE
             NULL;
         END IF;
@@ -435,6 +463,37 @@ CREATE TRIGGER trg_renglon_comprobante
     FOR EACH ROW
     EXECUTE FUNCTION fn_trg_renglon_comprobante();
 
+-- 7) RN-08: RECALCULAR TOTALES CUANDO EL RENGLON YA ES VISIBLE.
+--    BEFORE gestiona stock y descuento; AFTER ve el renglon persistido.
+--    En una eliminacion CASCADE de comprobante la cabecera ya no existe,
+--    entonces el UPDATE afecta cero filas y no genera un error.
+CREATE OR REPLACE FUNCTION public.fn_trg_renglon_comprobante_totales()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_nro_comprobante INTEGER;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_nro_comprobante := OLD.nro_comprobante;
+    ELSE
+        v_nro_comprobante := NEW.nro_comprobante;
+    END IF;
 
+    UPDATE public.comprobante AS c
+       SET subtotal  = t.o_subtotal,
+           descuento = t.o_descuento,
+           total     = t.o_total
+      FROM public.fn_total_comprobante(v_nro_comprobante) AS t
+     WHERE c.nro_comprobante = v_nro_comprobante;
+
+    RETURN NULL; -- AFTER: el valor de retorno es ignorado.
+END;
+$$;
+
+CREATE TRIGGER trg_renglon_comprobante_totales
+    AFTER INSERT OR UPDATE OR DELETE ON public.renglon_comprobante
+    FOR EACH ROW
+    EXECUTE FUNCTION public.fn_trg_renglon_comprobante_totales();
 
 COMMIT;

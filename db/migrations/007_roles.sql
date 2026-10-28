@@ -98,7 +98,16 @@ BEGIN
 END
 $limpiar_membresias$;
 
--- 3) ESQUEMA PUBLIC
+-- 3) PRIVILEGIOS DE BASE Y ESQUEMA PUBLIC
+-- PostgreSQL concede TEMPORARY a PUBLIC por defecto en una BD nueva.
+-- La politica de roles y los tests exigen que API/reportes no puedan crear
+-- objetos temporales; limitar esto SOLO a la base en ejecucion.
+DO $database_privileges$
+BEGIN
+    EXECUTE format('REVOKE CREATE, TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
+END
+$database_privileges$;
+
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
