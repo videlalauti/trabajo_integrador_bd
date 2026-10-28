@@ -1,0 +1,50 @@
+nombre,tipo
+Malbec,tinta
+Merlot,tinta
+Cabernet Sauvignon,tinta
+Syrah,tinta
+Pinot Negro,tinta
+Pinot Meunier,tinta
+Tannat,tinta
+Lambrusco Maestri,tinta
+Barbera,tinta
+Sangiovese,tinta
+Bonarda,tinta
+Tempranillo,tinta
+Cinsault,tinta
+Carignan,tinta
+Petit Verdot,tinta
+Cabernet Franc,tinta
+Carmenère,tinta
+Corvina Veronese,tinta
+Rondinella,tinta
+Ancellota,tinta
+Croatina,tinta
+Lambrusco Grasparossa,tinta
+Casavecchia,tinta
+Garnacha,tinta
+Tinta Cao,tinta
+Touriga Nacional,tinta
+Criolla Chica,tinta
+Criolla Grande,tinta
+Chardonnay,blanca
+Chenin,blanca
+Sauvignon Blanc,blanca
+Semillón,blanca
+Sauvignonasse,blanca
+Riesling,blanca
+Torrontés Riojano,blanca
+Ugni Blanc,blanca
+Moscato Bianco,blanca
+Pinot Blanco,blanca
+Glera,blanca
+Viognier,blanca
+Pedro Giménez,blanca
+Petit Manseng,blanca
+Moscatel de Alejandría,blanca
+Alvarinho,blanca
+Grüner Veltliner,blanca
+Fiano,blanca
+Verdelho,blanca
+Torrontés Sanjuanino,blanca
+Saint Jeannet,blanca
