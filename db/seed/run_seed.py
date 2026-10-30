@@ -1,3 +1,14 @@
+"""Orquestador de carga reproducible — Fase 3, Bodegas del Atuel.
+
+Uso (desde db/seed):
+    python run_seed.py --check
+    python run_seed.py --run
+
+El modo --check NO se conecta ni modifica la base. El modo --run requiere
+psycopg, Faker, los cuatro modulos y una base PostgreSQL 16 descartable.
+Los modulos exportan seed(conn, rng, faker, config, refs) y NO hacen commit.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -44,6 +55,36 @@ def _load_modules() -> list[tuple[str, Any]]:
     return loaded
 
 
+
+def generar_auditoria_precio(conn: Any, refs: dict[str, Any]) -> None:
+    """Genera una fila de RN-13 mediante el trigger real, tras terminar ventas."""
+    vino_ids = refs.get("vino_ids")
+    if not isinstance(vino_ids, list) or not vino_ids:
+        raise ValueError("RN-13: produccion no publico refs['vino_ids']")
+
+    with conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM public.auditoria_precio")
+        auditorias_antes = int(cur.fetchone()[0])
+        if auditorias_antes != 0:
+            raise ValueError("RN-13: auditoria_precio ya contiene filas; usar base descartable nueva")
+
+        # Modificar un precio despues de ventas mantiene los precios historicos
+        # guardados en renglon_comprobante y activa trg_auditoria_precio_vino.
+        cur.execute(
+            "UPDATE public.vino SET precio = precio + 1.00 "
+            "WHERE cod_vino = %s RETURNING cod_vino",
+            (int(vino_ids[0]),),
+        )
+        actualizados = cur.fetchall()
+        if len(actualizados) != 1:
+            raise RuntimeError("RN-13: no se pudo actualizar exactamente un vino")
+        cur.execute("SELECT COUNT(*) FROM public.auditoria_precio")
+        auditorias_despues = int(cur.fetchone()[0])
+        if auditorias_despues != auditorias_antes + 1:
+            raise RuntimeError("RN-13: el trigger no genero exactamente una fila de auditoria")
+    print(f"OK RN-13: 1 cambio real de precio; auditoria_precio={auditorias_despues}")
+
+
 def run(config: SeedConfig) -> None:
     """Carga por fases. Cada modulo es una transaccion indivisible.
 
@@ -85,6 +126,14 @@ def run(config: SeedConfig) -> None:
                 raise
             print(f"OK {name}: {perf_counter() - t0:.2f} s" +
                   (f" | resultado: {outcome}" if outcome is not None else ""))
+        # Paso final del orquestador: poblar auditoria_precio con el trigger RN-13.
+        try:
+            generar_auditoria_precio(conn, refs)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            print("ERROR en RN-13: transaccion de auditoria revertida", file=sys.stderr)
+            raise
     print(f"Carga finalizada en {perf_counter() - total_start:.2f} s")
     print("PENDIENTE: ejecutar control_integridad.sql y registrar conteos/tiempos de la base.")
 
