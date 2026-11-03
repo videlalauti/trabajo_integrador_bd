@@ -1,0 +1,16 @@
+# Credenciales y configuración local
+.env
+.env.*
+!.env.example
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+# Editor / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
