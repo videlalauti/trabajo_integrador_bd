@@ -25,7 +25,7 @@ from app.routers.comprobantes import router
 def conexion_prueba():
     return psycopg.connect(
         host="127.0.0.1",
-        port=5435,
+        port=int(os.environ["DB_PORT"]),
         dbname="bodegas_fase6_jose_test",
         user="bodega_api",
         password=os.environ["DB_PASSWORD"],
@@ -68,7 +68,7 @@ def cliente_http():
     # Bloqueo de seguridad antes de cualquier escritura.
     esperado = {
         "DB_HOST": "127.0.0.1",
-        "DB_PORT": "5435",
+        "DB_PORT": "5432",
         "DB_NAME": "bodegas_fase6_jose_test",
         "DB_USER": "bodega_api",
     }
