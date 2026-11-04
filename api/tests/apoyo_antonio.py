@@ -27,10 +27,6 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg_pool import PoolTimeout
 
-# psycopg asincronico no funciona con el ProactorEventLoop por defecto de
-# Windows: se usa el SelectorEventLoop durante las pruebas.
-if sys.platform.startswith("win"):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from app.core.config import get_db_settings  # noqa: E402
 from app.core.database import lifespan  # noqa: E402
@@ -96,7 +92,10 @@ def crear_app_prueba() -> FastAPI:
 @pytest.fixture(scope="module")
 def client():
     verificar_base_de_prueba()
-    with TestClient(crear_app_prueba()) as c:
+    opciones = {}
+    if sys.platform == "win32":
+        opciones["loop_factory"] = asyncio.SelectorEventLoop
+    with TestClient(crear_app_prueba(), backend_options=opciones) as c:
         r = c.get("/salud")
         assert r.status_code == 200, f"/salud no respondio 200 ({r.status_code}): {r.text}"
         yield c
