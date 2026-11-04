@@ -1,6 +1,7 @@
 """Punto único de entrada de la API REST."""
 
 import psycopg
+from psycopg_pool import PoolTimeout
 from fastapi import FastAPI
 
 from app.core.database import lifespan
@@ -14,6 +15,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.add_exception_handler(psycopg.Error, manejador_sqlstate)
+app.add_exception_handler(PoolTimeout, manejador_sqlstate)
 app.include_router(salud.router)
 
 # Los routers de vinos, clientes, comprobantes, transferencias,

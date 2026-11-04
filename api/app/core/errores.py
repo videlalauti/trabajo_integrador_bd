@@ -9,6 +9,7 @@ from psycopg_pool import PoolTimeout
 ERRORES_SQLSTATE: dict[str, tuple[int, str]] = {
     "23505": (409, "Ya existe un registro con esos datos."),
     "23503": (409, "Existe un problema con una referencia o dependencia."),
+    "23001": (409, "No se puede eliminar el registro porque tiene datos relacionados."),
     "23514": (422, "La operación incumple una restricción de datos."),
     "23502": (422, "Falta completar un dato obligatorio."),
     "22P02": (400, "El formato de un valor es inválido."),
@@ -17,7 +18,7 @@ ERRORES_SQLSTATE: dict[str, tuple[int, str]] = {
 }
 
 
-async def manejador_sqlstate(_request: Request, exc: psycopg.Error) -> JSONResponse:
+async def manejador_sqlstate(_request: Request, exc: psycopg.Error | PoolTimeout) -> JSONResponse:
     if isinstance(exc, PoolTimeout):
         codigo_http, mensaje = 503, "La base de datos no está disponible."
     elif exc.sqlstate == "P0001":
