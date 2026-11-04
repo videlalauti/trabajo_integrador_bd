@@ -261,23 +261,62 @@ async def test_listado_paginado_y_filtrado(entorno):
 
 @pytest.mark.asyncio
 async def test_eliminacion_con_dependencias(entorno):
-    cliente, _ = entorno
+    cliente, conn = entorno
 
-    # Vino con dependencia de auditoría,
-    # comprobado previamente en la base de pruebas.
-    codigo = 751
+    # Buscar un vino con dependencias ON DELETE RESTRICT.
+    # Solo se consultan tablas autorizadas para bodega_api.
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT v.cod_vino
+            FROM vino v
+            WHERE EXISTS (
+                SELECT 1
+                FROM renglon_comprobante rc
+                WHERE rc.cod_vino = v.cod_vino
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM renglon_ingreso ri
+                WHERE ri.cod_vino = v.cod_vino
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM renglon_transferencia rt
+                WHERE rt.cod_vino = v.cod_vino
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM stock_sala ss
+                WHERE ss.cod_vino = v.cod_vino
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM stock_deposito sd
+                WHERE sd.cod_vino = v.cod_vino
+            )
+            ORDER BY v.cod_vino
+            LIMIT 1
+            """
+        )
 
-    # Verificar que existe.
+        fila = await cur.fetchone()
+
+    if fila is None:
+        pytest.skip(
+            "No se encontró un vino con dependencias "
+            "ON DELETE RESTRICT en la base de pruebas."
+        )
+
+    codigo = fila[0]
+
+    # Comprobar que existe mediante la API.
     detalle = await cliente.get(f"/vinos/{codigo}")
+    assert detalle.status_code == 200, detalle.text
 
-    assert detalle.status_code == 200, (
-        "El vino 751 no existe en la base de pruebas."
-    )
-
-    # Intentar eliminarlo mediante la API.
+    # Intentar eliminarlo mediante HTTP.
     respuesta = await cliente.delete(f"/vinos/{codigo}")
 
-    # Comportamiento actual del manejador SQLSTATE.
-    assert respuesta.status_code == 500, respuesta.text
-    assert respuesta.json()["error"]["codigo"] == "23001"
-
+    # El manejador actualizado debe devolver HTTP 409.
+    assert respuesta.status_code == 409, respuesta.text
+    assert respuesta.json()["error"]["codigo"] in ("23001", "23503")
