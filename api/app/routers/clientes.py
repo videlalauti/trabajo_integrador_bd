@@ -2,7 +2,8 @@
 
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Query, Request, Response, status
+from fastapi.responses import JSONResponse
 
 from app.repositories import clientes as repo
 from app.schemas.clientes import (
@@ -17,6 +18,16 @@ router = APIRouter(
     tags=["Clientes"],
 )
 
+def cliente_no_encontrado():
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": {
+                "codigo": "NO_ENCONTRADO",
+                "mensaje": "Cliente no encontrado.",
+            }
+        },
+    )
 
 @router.get(
     "",
@@ -64,10 +75,7 @@ async def obtener_cliente(
         cliente = await repo.obtener_cliente(conn, id_cliente)
 
     if cliente is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado.",
-        )
+        return cliente_no_encontrado()
 
     return cliente
 
@@ -110,10 +118,7 @@ async def actualizar_cliente(
         )
 
     if cliente is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado.",
-        )
+         return cliente_no_encontrado()
 
     return cliente
 
@@ -133,9 +138,6 @@ async def eliminar_cliente(
         eliminado = await repo.eliminar_cliente(conn, id_cliente)
 
     if eliminado is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado.",
-        )
+        return cliente_no_encontrado()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

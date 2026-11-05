@@ -121,6 +121,9 @@ def test_sala_inexistente(cliente_http, monkeypatch):
     assert respuesta.status_code == 404
     funcion.assert_not_awaited()
 
+    assert respuesta.json()["error"]["codigo"] == "NO_ENCONTRADO"
+    assert respuesta.json()["error"]["mensaje"] == "Sala no encontrada."
+
 
 def test_falta_id_sala(cliente_http):
     respuesta = cliente_http.get(
@@ -224,6 +227,8 @@ def test_vino_inexistente(cliente_http, monkeypatch):
     )
 
     assert respuesta.status_code == 404
+    assert respuesta.json()["error"]["codigo"] == "NO_ENCONTRADO"
+    assert respuesta.json()["error"]["mensaje"] == "Vino no encontrado."
 
 
 def test_codigo_vino_invalido(cliente_http):

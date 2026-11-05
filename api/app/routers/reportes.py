@@ -1,6 +1,7 @@
 ﻿"""Endpoints REST de los cinco reportes obligatorios."""
 
 from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
 
 from app.repositories import reportes as repo
 from app.schemas.reportes import (
@@ -17,6 +18,16 @@ router = APIRouter(
     tags=["Reportes"],
 )
 
+def reporte_no_encontrado(mensaje: str):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": {
+                "codigo": "NO_ENCONTRADO",
+                "mensaje": mensaje,
+            }
+        },
+    )
 
 @router.get(
     "/top-vinos",
@@ -60,10 +71,7 @@ async def vinos_sin_stock(
 
     async with request.app.state.db_pool.connection() as conn:
         if not await repo.existe_sala(conn, id_sala):
-            raise HTTPException(
-                status_code=404,
-                detail="Sala no encontrada.",
-            )
+            return reporte_no_encontrado("Sala no encontrada.")
 
         return await repo.vinos_sin_stock(
             conn,
@@ -122,9 +130,6 @@ async def trazabilidad(
         )
 
     if resultado is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Vino no encontrado.",
-        )
+        return reporte_no_encontrado("Vino no encontrado.")
 
     return resultado

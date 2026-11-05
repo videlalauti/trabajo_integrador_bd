@@ -12,6 +12,22 @@ from app.core.errores import manejador_sqlstate
 from app.routers import clientes
 
 
+def conexion_prueba_segura(config):
+    try:
+        return psycopg.connect(
+            host=config.host,
+            port=config.port,
+            dbname=config.dbname,
+            user=config.user,
+            password=config.password,
+            connect_timeout=5,
+        )
+    except psycopg.Error:
+        raise RuntimeError(
+            "No se pudo conectar a la base de pruebas de Fabricio."
+        ) from None
+
+
 @pytest.fixture(scope="module")
 def cliente_api_real():
     config = get_db_settings()
@@ -24,13 +40,7 @@ def cliente_api_real():
     )
 
     # Verificar la identidad REAL de la conexion antes de escribir.
-    with psycopg.connect(
-        host=config.host,
-        port=config.port,
-        dbname=config.dbname,
-        user=config.user,
-        password=config.password,
-    ) as conn:
+    with conexion_prueba_segura(config) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT current_database(), current_user")
             base_real, usuario_real = cur.fetchone()
@@ -177,13 +187,7 @@ def test_rechazar_eliminacion_cliente_con_ventas(cliente_api_real):
     assert config.user == "bodega_api"
 
     # Buscar un cliente que tenga comprobantes asociados.
-    with psycopg.connect(
-        host=config.host,
-        port=config.port,
-        dbname=config.dbname,
-        user=config.user,
-        password=config.password,
-    ) as conn:
+    with conexion_prueba_segura(config) as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT c.id_cliente

@@ -86,6 +86,8 @@ def test_cliente_inexistente(cliente_http, monkeypatch):
     respuesta = cliente_http.get("/clientes/999999")
 
     assert respuesta.status_code == 404
+    assert respuesta.json()["error"]["codigo"] == "NO_ENCONTRADO"
+    assert respuesta.json()["error"]["mensaje"] == "Cliente no encontrado."
 
 
 def test_crear_cliente(cliente_http, cliente_ejemplo, monkeypatch):
