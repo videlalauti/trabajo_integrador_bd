@@ -1,0 +1,69 @@
+﻿BODEGAS DEL ATUEL - FASE 6
+EVIDENCIA: RECONSTRUCCION AUTOMATICA EN DOCKER
+
+Fecha: 05/11/2026
+
+ENTORNO PRINCIPAL
+Proyecto Docker: bodegas-atuel-fase6
+PostgreSQL: puerto 55438
+FastAPI: puerto 8001
+
+ENTORNO DE ENSAYO
+Proyecto Docker: bodegas-atuel-fase6-ensayo
+PostgreSQL: puerto 55439
+FastAPI: puerto 8002
+Base: bodegas_fase6_docker
+Version PostgreSQL: 18.6
+
+PROCEDIMIENTO
+1. Creacion de un proyecto Docker independiente.
+2. Inicializacion de PostgreSQL con volumen vacio.
+3. Ejecucion de inicializar.py --check.
+4. Verificacion de 0 objetos iniciales.
+5. Ejecucion de inicializar.py --run.
+6. Restauracion del respaldo completo de Fase 3.
+7. Creacion de los cinco indices de Fase 4.
+8. Configuracion del rol bodega_api.
+9. Inicio de FastAPI.
+10. Verificacion de OpenAPI y consultas HTTP.
+
+RESULTADOS DEL INICIALIZADOR
+Respaldo SHA-256: OK
+Objetos existentes en public: 0
+Roles: OK
+Restauracion: OK
+Indices: creados
+Usuario bodega_api: configurado
+27 tablas: OK
+5 indices: OK
+Rol bodega_api: OK
+INICIALIZACION COMPLETA: OK
+Codigo de salida: 0
+
+RESULTADOS HTTP
+Endpoints funcionales: 27
+Salud: HTTP 200
+Vinos: HTTP 200
+Comprobantes: HTTP 200
+Ingresos: HTTP 200
+Transferencias: HTTP 200
+Clientes: HTTP 200
+Top vinos: HTTP 200
+Ventas por sala: HTTP 200
+Vinos sin stock: HTTP 200
+Transportista activo: HTTP 200
+Trazabilidad: HTTP 200
+
+Consultas HTTP correctas: 11/11
+Vinos: 750
+Clientes: 20000
+RECONSTRUCCION AUTOMATICA VALIDADA: OK
+Codigo de salida: 0
+
+CONCLUSION
+El proyecto pudo reconstruirse desde cero en un
+entorno Docker independiente, utilizando el respaldo
+validado de la Fase 3 y el inicializador de Fase 6.
+
+La base principal no fue modificada durante el ensayo.
+No se ejecutaron solicitudes HTTP de escritura.

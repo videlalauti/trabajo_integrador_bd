@@ -1,0 +1,40 @@
+
+name: bodegas-atuel-fase6
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: bodegas_fase6_docker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${FASE6_PG_ADMIN_PASSWORD:?Falta configurar la clave de PostgreSQL}
+    ports:
+      - "127.0.0.1:${FASE6_DB_HOST_PORT:-55438}:5432"
+    volumes:
+      - postgres18_fase6_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bodegas_fase6_docker"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build:
+      context: ./api
+    image: bodegas-atuel-api:fase6
+    ports:
+      - "127.0.0.1:${FASE6_API_HOST_PORT:-8001}:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: bodegas_fase6_docker
+      DB_USER: bodega_api
+      DB_PASSWORD: ${FASE6_API_PASSWORD:?Falta configurar la clave de la API}
+      DB_POOL_MIN: "1"
+      DB_POOL_MAX: "5"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres18_fase6_data:

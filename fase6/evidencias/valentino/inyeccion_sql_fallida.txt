@@ -1,0 +1,39 @@
+﻿BODEGAS DEL ATUEL - FASE 6
+EVIDENCIA: INYECCION SQL FALLIDA
+
+Entorno:
+- FastAPI ejecutada mediante Docker Compose.
+- PostgreSQL 18.6.
+- Base: bodegas_fase6_docker.
+- Usuario de API: bodega_api.
+- Endpoint: GET /vinos.
+- Filtro utilizado: bodega.
+
+Payload de prueba:
+' OR '1'='1' --
+
+RESULTADOS:
+
+Consulta normal: HTTP 200
+Total de vinos: 750
+
+Consulta con inyeccion: HTTP 200
+Total devuelto: 0
+
+Consulta posterior: HTTP 200
+Total posterior: 750
+
+INYECCION SQL FALLIDA: OK
+CONSULTAS PARAMETRIZADAS: VERIFICADAS
+Codigo de salida: 0
+
+INTERPRETACION:
+El payload no altero la condicion SQL.
+El repositorio utiliza parametros %s de Psycopg.
+La cantidad original de registros permanecio en 750.
+No se realizaron modificaciones sobre la base de datos.
+
+ALCANCE:
+Esta evidencia demuestra la proteccion del filtro
+evaluado. No representa una auditoria completa de
+todos los endpoints.
