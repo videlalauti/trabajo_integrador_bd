@@ -1,0 +1,40 @@
+﻿BODEGAS DEL ATUEL - FASE 6
+EVIDENCIA: VENTA SIN STOCK Y ROLLBACK REAL
+
+Fecha: 05/11/2026
+
+ENTORNO
+PostgreSQL local 18
+Base descartable: bodegas_fase6_jose_test
+Usuario: bodega_api
+
+PRUEBA
+Archivo: api/tests/test_comprobantes_integracion.py
+Funcion: test_03_sin_stock_http409_y_rollback_completo
+
+PROCEDIMIENTO
+1. Registrar una venta con dos renglones.
+2. Primer renglon: vino con stock suficiente.
+3. Segundo renglon: vino con stock insuficiente.
+4. Verificar rechazo HTTP 409 y regla RN-09.
+5. Consultar nuevamente PostgreSQL para comprobar rollback.
+
+RESULTADO
+ROLLBACK REAL OK: HTTP 409, sin nuevas cabeceras ni renglones, stock intacto
+PASSED
+
+1 passed, 1 warning
+Codigo de salida: 0
+
+VERIFICACIONES
+HTTP: 409
+SQLSTATE: P0001
+Regla de negocio: RN-09
+Cantidad de comprobantes: sin cambios
+Cantidad de renglones: sin cambios
+Stock de ambos vinos: sin cambios
+
+CONCLUSION
+La transaccion fue revertida completamente.
+No quedaron registros parciales ni modificaciones de stock.
+La prueba utilizo PostgreSQL real, no simulaciones.
