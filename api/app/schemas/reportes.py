@@ -1,4 +1,4 @@
-﻿"""Modelos de respuesta de los reportes de la API."""
+"""Modelos de respuesta de los reportes de la API."""
 
 from datetime import date
 from decimal import Decimal
@@ -87,4 +87,3 @@ class ReporteTrazabilidad(BaseModel):
     tamanio: int
     relacion_directa_vino_lote: bool
     aclaracion: str
-

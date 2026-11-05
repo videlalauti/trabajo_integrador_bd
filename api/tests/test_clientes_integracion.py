@@ -1,4 +1,4 @@
-﻿"""Pruebas de integracion HTTP con PostgreSQL real."""
+"""Pruebas de integracion HTTP con PostgreSQL real."""
 
 import asyncio
 import psycopg
@@ -222,4 +222,3 @@ def test_rechazar_eliminacion_cliente_con_ventas(cliente_api_real):
     )
 
     assert consulta.status_code == 200, consulta.text
-
