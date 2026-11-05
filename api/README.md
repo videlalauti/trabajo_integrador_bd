@@ -172,68 +172,75 @@ compartirlas en las evidencias.
 
 
 
-### Preparación inicial
 
-Para preparar una instalación nueva de Docker, se necesita el
-respaldo validado `db/seed/dump_completo.sql.gz`.
+### Preparación inicial automática
+
+Docker Compose permite levantar PostgreSQL 18 y FastAPI con un solo comando.
+
+**Requisito:** disponer del respaldo validado `db/seed/dump_completo.sql.gz`.
+
+Antes de comenzar, configurar las contraseñas `FASE6_PG_ADMIN_PASSWORD` y `FASE6_API_PASSWORD` según las instrucciones anteriores.
 
 Desde PowerShell, en la raíz del repositorio:
 
-**1. Configurar las contraseñas**
-
-Definir las variables `FASE6_PG_ADMIN_PASSWORD` y
-`FASE6_API_PASSWORD`, siguiendo las instrucciones de la
-sección anterior.
-
-**2. Iniciar únicamente PostgreSQL**
-
 ```powershell
-docker compose -f .\compose.fase6.yml up -d db
+docker compose -f .\compose.fase6.yml up -d --build
 ```
 
-**3. Verificar la base antes de restaurar**
+Para verificar los servicios:
+
+```powershell
+docker compose -f .\compose.fase6.yml ps
+Invoke-RestMethod http://127.0.0.1:8001/salud
+```
+
+Documentación Swagger:
+
+http://127.0.0.1:8001/docs
+
+#### ¿Qué sucede durante el primer arranque?
+
+Cuando PostgreSQL encuentra un volumen nuevo y vacío, ejecuta automáticamente `fase6/docker/01_inicializar_postgres.sh`.
+
+Este script:
+
+- Comprueba el SHA-256 del respaldo.
+- Crea los nueve roles del proyecto.
+- Restaura las 27 tablas y sus datos.
+- Aplica los cinco índices de la Fase 4.
+- Configura los permisos y la contraseña de `bodega_api`.
+- Verifica que la inicialización haya finalizado correctamente.
+
+La inicialización automática solamente se ejecuta al crear una base nueva. Si el volumen ya contiene datos, PostgreSQL los conserva.
+
+### Inicializador manual alternativo
+
+El proyecto también incluye `fase6/docker/inicializar.py` para verificaciones y preparación manual en entornos que no utilicen la inicialización automática.
+
+Para comprobar el estado de una base:
 
 ```powershell
 .\.venv\Scripts\python.exe .\fase6\docker\inicializar.py --check
 ```
 
-En una base nueva debe aparecer:
+El modo `--run` se reserva para instalaciones manuales con la inicialización automática deshabilitada y una base completamente vacía.
 
-`Base vacia: apta para inicializacion.`
+### Puertos y entornos independientes
 
-**4. Inicializar la base vacía**
+Puertos predeterminados:
 
-```powershell
-.\.venv\Scripts\python.exe .\fase6\docker\inicializar.py --run
-```
+- PostgreSQL: 55438.
+- FastAPI: 8001.
 
-El programa solicita escribir `INICIALIZAR` para confirmar.
+Pueden personalizarse mediante `FASE6_DB_HOST_PORT` y `FASE6_API_HOST_PORT`.
 
-Realiza automáticamente:
+Para ejecutar instalaciones independientes, utilizar un valor distinto de `COMPOSE_PROJECT_NAME`.
 
-- Verificación SHA-256 del respaldo.
-- Creación de los nueve roles de PostgreSQL.
-- Restauración del respaldo completo de Fase 3.
-- Aplicación de los cinco índices de Fase 4.
-- Configuración de contraseña y privilegios de `bodega_api`.
-- Verificación de las 27 tablas, los cinco índices y el rol.
+**Importante:** no utilizar `docker compose down -v` si se desea conservar la base de datos.
 
-**5. Iniciar FastAPI**
+El respaldo debe incluirse en la entrega o proporcionarse mediante el mecanismo acordado con la cátedra.
 
-```powershell
-docker compose -f .\compose.fase6.yml up -d --no-build api
-```
 
-Si la imagen todavía no fue construida, utilizar
-`docker compose -f .\compose.fase6.yml up -d --build api`.
-
-**Seguridad:** el inicializador rechaza la restauración si
-detecta objetos existentes en la base. No utilizar `--run`
-sobre una base que ya contiene datos.
-
-El procedimiento requiere el respaldo completo validado,
-que debe entregarse junto al proyecto o proporcionarse
-mediante el mecanismo acordado con la cátedra.
 
 
 ## 6. Seguridad

@@ -67,3 +67,39 @@ validado de la Fase 3 y el inicializador de Fase 6.
 
 La base principal no fue modificada durante el ensayo.
 No se ejecutaron solicitudes HTTP de escritura.
+
+========================================
+PRUEBA ADICIONAL: ARRANQUE AUTOMATICO
+Fecha: 05/11/2026
+========================================
+
+Proyecto: bodegas-atuel-fase6-auto
+PostgreSQL: 18.6
+Puerto PostgreSQL: 55440
+Puerto FastAPI: 8003
+
+PROCEDIMIENTO:
+Se inicio PostgreSQL con un volumen nuevo.
+Docker ejecuto automaticamente el script
+01_inicializar_postgres.sh.
+
+RESULTADO:
+INICIALIZACION AUTOMATICA: OK
+Contenedor PostgreSQL: healthy
+
+VALIDACION DE FASTAPI:
+Salud: ok
+Conexion PostgreSQL: conectada
+Vinos: 750
+Clientes: 20000
+Endpoints funcionales: 27
+
+ARRANQUE AUTOMATICO COMPLETO: OK
+Codigo de salida: 0
+
+CONCLUSION:
+Docker Compose permite reconstruir la base
+e iniciar FastAPI utilizando el procedimiento
+de inicializacion automatica.
+No fue necesario ejecutar inicializar.py --run.
+Los entornos anteriores permanecieron independientes.
