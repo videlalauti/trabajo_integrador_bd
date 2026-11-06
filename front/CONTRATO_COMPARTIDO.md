@@ -262,6 +262,8 @@ Las rutas son administradas por Valentino desde `App.tsx`.
 
 \- `/vinos`: catálogo.
 
+\- `/vinos/:cod_vino`: detalle de un vino.
+
 \- `/vinos/nuevo`: alta de vinos.
 
 \- `/vinos/:cod\_vino/editar`: edición.
@@ -488,9 +490,22 @@ en los schemas de FastAPI y en `/docs`.
 
 
 
-Los catálogos auxiliares para seleccionar salas, bodegas,
+### Catálogos auxiliares
 
-cepas y maridajes aún deben revisarse.
+Los siguientes endpoints están implementados, probados e
+integrados en `integracion/fase7`:
+
+- GET `/salas`: id_sala, calle, numero, localidad.
+- GET `/bodegas`: cuit, razon_social.
+- GET `/cepas`: id_cepa, nombre, tipo.
+- GET `/maridajes`: id_maridaje, nombre, temperatura_servicio_c.
+
+Todos devuelven arreglos JSON.
+
+El campo temperatura_servicio_c se serializa como string decimal.
+
+Estos endpoints son de solo lectura y utilizan datos reales
+de PostgreSQL 18.
 
 
 
@@ -623,13 +638,11 @@ Para aprobar el frontend deben comprobarse:
 ## 11. Dependencias pendientes
 
 
+Los catálogos auxiliares de salas, bodegas, cepas y maridajes
+ya están disponibles en la API e integrados en la rama compartida.
 
-Antes de cerrar los módulos, Valentino deberá revisar
-
-cómo obtener desde la API los catálogos necesarios para
-
-los formularios y selectores.
-
+Las dependencias adicionales que identifiquen los módulos
+individuales deberán revisarse antes de su implementación.
 
 
 Los integrantes deben informar cualquier endpoint
