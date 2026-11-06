@@ -6,7 +6,7 @@ from fastapi import FastAPI
 
 from app.core.database import lifespan
 from app.core.errores import manejador_sqlstate
-from app.routers import salud, vinos, comprobantes, ingresos, transferencias, clientes, reportes, salas
+from app.routers import salud, vinos, comprobantes, ingresos, transferencias, clientes, reportes, salas, catalogos
 
 app = FastAPI(
     title="Bodegas del Atuel - API REST",
@@ -24,6 +24,7 @@ app.include_router(transferencias.router)
 app.include_router(clientes.router)
 app.include_router(reportes.router)
 app.include_router(salas.router)
+app.include_router(catalogos.router)
 
 # Los routers de vinos, clientes, comprobantes, transferencias,
 # ingresos y reportes se incorporan al integrarlos.
