@@ -1,0 +1,104 @@
+
+:root {
+  font-family: Inter, system-ui, Arial, sans-serif;
+  color: #243447;
+  background: #f5f7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Encabezado principal */
+
+#root > header {
+  background: #193b45;
+  color: white;
+  padding: 24px 32px;
+}
+
+#root > header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+#root > header p {
+  margin: 0 0 24px;
+  color: #c9d9dc;
+}
+
+/* Navegacion */
+
+#root > header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#root > header nav a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #315560;
+}
+
+#root > header nav a:hover,
+#root > header nav a.active {
+  background: #467a83;
+}
+
+/* Contenido de las pantallas */
+
+#root > main {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 32px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px #0000000d;
+}
+
+#root > main h2 {
+  margin-top: 0;
+}
+
+/* Pantallas pequeñas */
+
+@media (max-width: 768px) {
+  #root > header {
+    padding: 20px;
+  }
+
+  #root > header nav {
+    flex-direction: column;
+  }
+
+  #root > main {
+    margin: 16px;
+    padding: 20px;
+  }
+}
