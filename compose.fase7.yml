@@ -1,0 +1,11 @@
+services:
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    image: bodegas-atuel-front:fase7
+    ports:
+      - "127.0.0.1:${FASE7_FRONT_HOST_PORT:-8087}:80"
+    depends_on:
+      api:
+        condition: service_started
