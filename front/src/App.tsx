@@ -9,14 +9,16 @@ import {
 
 import EstadoConexion from './components/EstadoConexion'
 
-function PantallaPendiente({ titulo }: { titulo: string }) {
-  return (
-    <main>
-      <h2>{titulo}</h2>
-      <p>Esta pantalla se desarrollará durante la Fase 7.</p>
-    </main>
-  )
-}
+import CatalogoVinos from './pages/vinos/CatalogoVinos'
+import DetalleVino from './pages/vinos/DetalleVino'
+import NuevoVino from './pages/vinos/NuevoVino'
+import EditarVino from './pages/vinos/EditarVino'
+
+import NuevaVenta from './pages/ventas/NuevaVenta'
+
+import TableroReportes from './pages/reportes/TableroReportes'
+
+import TransferenciasPage from './pages/transferencias/TransferenciasPage'
 
 const enlaces = [
   { ruta: '/', nombre: 'Inicio' },
@@ -50,38 +52,50 @@ function App() {
 
       <Routes>
         <Route
-           path="/"
-           element={
-               <main>
-                   <h2>Inicio</h2>
-                   <EstadoConexion />
-               </main>
-            }
+          path="/"
+          element={
+            <main>
+              <h2>Inicio</h2>
+              <EstadoConexion />
+            </main>
+          }
         />
+
         <Route
           path="/vinos"
-          element={<PantallaPendiente titulo="Catálogo de vinos" />}
+          element={<CatalogoVinos />}
         />
+
         <Route
           path="/vinos/nuevo"
-          element={<PantallaPendiente titulo="Alta de vinos" />}
+          element={<NuevoVino />}
         />
+
+        <Route
+          path="/vinos/:cod_vino"
+          element={<DetalleVino />}
+        />
+
         <Route
           path="/vinos/:cod_vino/editar"
-          element={<PantallaPendiente titulo="Editar vino" />}
+          element={<EditarVino />}
         />
+
         <Route
           path="/ventas/nueva"
-          element={<PantallaPendiente titulo="Nueva venta" />}
+          element={<NuevaVenta />}
         />
+
         <Route
           path="/transferencias"
-          element={<PantallaPendiente titulo="Transferencias" />}
+          element={<TransferenciasPage />}
         />
+
         <Route
           path="/reportes"
-          element={<PantallaPendiente titulo="Tablero de reportes" />}
+          element={<TableroReportes />}
         />
+
         <Route
           path="*"
           element={<Navigate to="/" replace />}
