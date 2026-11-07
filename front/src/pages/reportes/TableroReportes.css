@@ -1,0 +1,170 @@
+﻿/* Estilos exclusivos del tablero de reportes */
+
+.tablero-reportes {
+  color: #243447;
+}
+
+.tablero-reportes > header {
+  margin-bottom: 28px;
+}
+
+.tablero-reportes > header h1 {
+  margin: 0 0 12px;
+  color: #193b45;
+  font-size: 30px;
+}
+
+.tablero-reportes > header p {
+  color: #526575;
+  line-height: 1.6;
+}
+
+.tablero-reportes > section {
+  margin-top: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #dce5e9;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.tablero-reportes section h2 {
+  color: #193b45;
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.tablero-reportes section > p {
+  line-height: 1.5;
+}
+
+/* Tablas */
+
+.tablero-reportes table {
+  width: 100%;
+  min-width: 540px;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tablero-reportes th,
+.tablero-reportes td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e3e9ed;
+  text-align: left;
+}
+
+.tablero-reportes th {
+  color: #193b45;
+  background: #edf3f5;
+  font-weight: 600;
+}
+
+.tablero-reportes tbody tr:hover {
+  background: #f5f9fa;
+}
+
+/* Barras de ventas por sala */
+
+.tablero-reportes .reporte-barra {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 2fr) minmax(120px, 1fr);
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.tablero-reportes .reporte-barra label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tablero-reportes .reporte-barra progress {
+  width: 100%;
+  height: 18px;
+  accent-color: #467a83;
+}
+
+.tablero-reportes .reporte-barra strong {
+  text-align: right;
+  color: #193b45;
+  white-space: nowrap;
+}
+
+/* Selector de sala */
+
+.tablero-reportes select {
+  max-width: 100%;
+  min-width: 240px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  border: 1px solid #bdcbd0;
+  border-radius: 6px;
+  background: white;
+  color: #243447;
+}
+
+/* Paginacion */
+
+.tablero-reportes nav[aria-label="Paginación del reporte de stock"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.tablero-reportes nav button {
+  padding: 10px 16px;
+  background: #315560;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+.tablero-reportes nav button:hover:not(:disabled) {
+  background: #467a83;
+}
+
+.tablero-reportes nav button:disabled {
+  background: #d9e2e5;
+  color: #667780;
+  cursor: not-allowed;
+}
+
+/* Mensajes */
+
+.tablero-reportes [role="alert"] {
+  padding: 12px;
+  color: #8a2929;
+  background: #fff0f0;
+  border: 1px solid #e8baba;
+  border-radius: 6px;
+}
+
+.tablero-reportes [role="status"] {
+  color: #526575;
+  font-style: italic;
+}
+
+/* Adaptacion a pantallas pequeñas */
+
+@media (max-width: 768px) {
+  .tablero-reportes > header h1 {
+    font-size: 24px;
+  }
+
+  .tablero-reportes > section {
+    padding: 16px;
+  }
+
+  .tablero-reportes .reporte-barra {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .tablero-reportes .reporte-barra strong {
+    text-align: left;
+  }
+}
