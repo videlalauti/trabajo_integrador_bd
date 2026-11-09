@@ -4,10 +4,10 @@
 
 ## Inventario
 
-- `scripts/check_public_api.py`: diagnóstico HTTPS `/salud` (solo consultar una vez desplegado).
+- `scripts/check_public_api.py`: diagnóstico HTTPS `/salud` sin redirecciones; exige `estado=ok`, `base_datos=conectada` y **`tls: true` booleano** en la conexión de FastAPI. Solo usar cuando esté desplegado y autorizado.
 - `scripts/comparar_conteos.py`: comparador legado, conservado para reproducir el hallazgo.
 - `scripts/comparar_conteos_estricto.py`: comparación exigente de 27 tablas y volúmenes.
-- `scripts/test_kit.py` y `scripts/test_comparador_estricto.py`: 8+9 pruebas offline.
+- `scripts/test_kit.py` y `scripts/test_comparador_estricto.py`: 8 originales + 10 nuevas de TLS/redirecciones + 9 del comparador estricto; todas offline.
 - `sql/01_conteos_public.sql`: conteo exacto de las 27 tablas.
 - `sql/02_roles_tls_solo_lectura.sql`: inspección de sesión y privilegios. **Una sesión psql no prueba la conexión TLS usada por FastAPI**.
 - `sql/03_objetos_restauracion_solo_lectura.sql`: cantidades de objetos y funciones SECURITY DEFINER.
@@ -27,7 +27,7 @@ python fase8/verificacion/scripts/test_kit.py
 python fase8/verificacion/scripts/test_comparador_estricto.py
 ```
 
-Esperado: 8 y 9 tests en estado OK. Ninguna prueba offline consulta Supabase.
+Esperado: 18 y 9 tests en estado OK (se mantienen las 17 pruebas anteriores y se agregan 10). Ninguna prueba offline consulta Supabase.
 
 ## Comparación ilustrativa (rechazo esperado)
 

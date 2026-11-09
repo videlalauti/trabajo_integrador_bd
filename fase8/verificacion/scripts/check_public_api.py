@@ -6,7 +6,7 @@ import sys
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
 def validar_base(url: str) -> str:
@@ -16,9 +16,21 @@ def validar_base(url: str) -> str:
     return url.rstrip("/")
 
 
+class RedireccionRechazada(HTTPRedirectHandler):
+    """No sigue HTTP 30x: /salud debe responder directamente por HTTPS."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # Ni HTTP ni otro host ni una ruta inesperada deben recibir la solicitud.
+        raise ValueError(f"Redireccion HTTP {code} no permitida en /salud")
+
+
 def solicitar(url: str, timeout: int):
     request = Request(url, headers={"Accept": "application/json", "User-Agent": "bodegas-fase8-auditoria/1.0"})
-    with urlopen(request, timeout=timeout) as r:
+    # El abridor dedicado impide las redirecciones antes de seguirlas.
+    abridor = build_opener(RedireccionRechazada())
+    with abridor.open(request, timeout=timeout) as r:
+        if r.geturl() != url:
+            raise ValueError("Destino final inesperado: /salud debe mantener la URL HTTPS original")
         status = r.status
         content_type = r.headers.get("Content-Type", "")
         body = r.read(200000)
@@ -34,7 +46,9 @@ def ejecutar(base: str, timeout: int, intentos: int, pausa: float):
                 raise ValueError(f"HTTP {status}")
             if not isinstance(payload, dict) or payload.get("estado") != "ok" or payload.get("base_datos") != "conectada":
                 raise ValueError("JSON de /salud no acredita DB conectada")
-            return {"api": base, "endpoint": "/salud", "status": "OK", "http": status, "intento": n}
+            if payload.get("tls") is not True:
+                raise ValueError("/salud no acredita TLS API-PostgreSQL: se exige tls: true")
+            return {"api": base, "endpoint": "/salud", "status": "OK", "http": status, "tls": True, "intento": n}
         except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
             ultima = f"{type(exc).__name__}: {exc}"
             if n < intentos:
