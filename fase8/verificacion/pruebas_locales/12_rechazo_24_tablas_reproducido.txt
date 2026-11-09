@@ -1,0 +1,31 @@
+NO APROBADO:
+ - ORIGEN: faltan 24 tablas: analisis_calidad, auditoria_precio, bodega, cepa, empleado, finca, ingreso, localidad, lote_uva, maridaje, parcela, permiso_exportacion, renglon_comprobante, renglon_ingreso, renglon_transferencia, sala_venta, stock_deposito, stock_sala, tipo_cliente, transferencia, transportista, transportista_localidad, vino_cepa, vino_maridaje
+ - DESTINO: faltan 24 tablas: analisis_calidad, auditoria_precio, bodega, cepa, empleado, finca, ingreso, localidad, lote_uva, maridaje, parcela, permiso_exportacion, renglon_comprobante, renglon_ingreso, renglon_transferencia, sala_venta, stock_deposito, stock_sala, tipo_cliente, transferencia, transportista, transportista_localidad, vino_cepa, vino_maridaje
+tabla,origen,destino,resultado
+analisis_calidad,,,FALTA_O_DIFIERE
+auditoria_precio,,,FALTA_O_DIFIERE
+bodega,,,FALTA_O_DIFIERE
+cepa,,,FALTA_O_DIFIERE
+cliente,12000,12000,OK
+comprobante,3000,3000,OK
+empleado,,,FALTA_O_DIFIERE
+finca,,,FALTA_O_DIFIERE
+ingreso,,,FALTA_O_DIFIERE
+localidad,,,FALTA_O_DIFIERE
+lote_uva,,,FALTA_O_DIFIERE
+maridaje,,,FALTA_O_DIFIERE
+parcela,,,FALTA_O_DIFIERE
+permiso_exportacion,,,FALTA_O_DIFIERE
+renglon_comprobante,,,FALTA_O_DIFIERE
+renglon_ingreso,,,FALTA_O_DIFIERE
+renglon_transferencia,,,FALTA_O_DIFIERE
+sala_venta,,,FALTA_O_DIFIERE
+stock_deposito,,,FALTA_O_DIFIERE
+stock_sala,,,FALTA_O_DIFIERE
+tipo_cliente,,,FALTA_O_DIFIERE
+transferencia,,,FALTA_O_DIFIERE
+transportista,,,FALTA_O_DIFIERE
+transportista_localidad,,,FALTA_O_DIFIERE
+vino,25,25,OK
+vino_cepa,,,FALTA_O_DIFIERE
+vino_maridaje,,,FALTA_O_DIFIERE

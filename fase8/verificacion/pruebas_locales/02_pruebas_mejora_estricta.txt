@@ -1,0 +1,14 @@
+test_27_y_perfil_completo_ok (test_comparador_estricto.PruebasEstricto.test_27_y_perfil_completo_ok) ... ok
+test_27_y_perfil_reducido_ok (test_comparador_estricto.PruebasEstricto.test_27_y_perfil_reducido_ok) ... ok
+test_detecta_csv_de_tres_tablas_aunque_coincidan (test_comparador_estricto.PruebasEstricto.test_detecta_csv_de_tres_tablas_aunque_coincidan) ... ok
+test_detecta_diferencia (test_comparador_estricto.PruebasEstricto.test_detecta_diferencia) ... ok
+test_detecta_tabla_vacia (test_comparador_estricto.PruebasEstricto.test_detecta_tabla_vacia) ... ok
+test_rechaza_columnas_extra_csv (test_comparador_estricto.PruebasEstricto.test_rechaza_columnas_extra_csv) ... ok
+test_rechaza_duplicados_csv (test_comparador_estricto.PruebasEstricto.test_rechaza_duplicados_csv) ... ok
+test_rechaza_perfil_completo_insuficiente (test_comparador_estricto.PruebasEstricto.test_rechaza_perfil_completo_insuficiente) ... ok
+test_rechaza_perfil_reducido_insuficiente (test_comparador_estricto.PruebasEstricto.test_rechaza_perfil_reducido_insuficiente) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.002s
+
+OK

@@ -1,0 +1,13 @@
+test_compara_conteos_iguales (__main__.VerificacionesKit.test_compara_conteos_iguales) ... ok
+test_detecta_conteos_distintos (__main__.VerificacionesKit.test_detecta_conteos_distintos) ... ok
+test_detecta_tabla_faltante (__main__.VerificacionesKit.test_detecta_tabla_faltante) ... ok
+test_fila_duplicada (__main__.VerificacionesKit.test_fila_duplicada) ... ok
+test_no_credenciales_embebidas (__main__.VerificacionesKit.test_no_credenciales_embebidas) ... ok
+test_no_http (__main__.VerificacionesKit.test_no_http) ... ok
+test_url_https (__main__.VerificacionesKit.test_url_https) ... ok
+test_volumen_insuficiente (__main__.VerificacionesKit.test_volumen_insuficiente) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+OK

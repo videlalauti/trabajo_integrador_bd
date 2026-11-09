@@ -1,0 +1,1 @@
+Salidas OFFLINE de la revisión anterior. El usuario ejecutó 8/8 y 9/9 en su PowerShell y registró sus logs adicionales 07–09 localmente; estos archivos incluidos proceden del kit de revisión, no incluyen necesariamente sus logs de la computadora Windows. Al publicar en Git, anexe solo evidencias locales verificadas sin datos privados.

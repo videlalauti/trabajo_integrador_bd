@@ -1,0 +1,6 @@
+REVISIÓN ESTÁTICA, SIN CONEXIÓN A POSTGRESQL
+
+Kit SQL 01: exactamente 27 nombres de tablas public distintos.
+control_integridad.sql suministrado: exactamente 27 nombres de tablas.
+Comparación de conjuntos: idénticos (27/27).
+No valida esquema 001 ni propietarios/roles de 007; esos archivos no estaban incluidos en el kit.
