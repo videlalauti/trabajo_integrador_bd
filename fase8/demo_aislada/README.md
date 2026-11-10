@@ -1,6 +1,6 @@
 # Etapa 8/9 — Preparacion de demo segura AISLADA
 
-**Estado: CANDIDATO; sin base PostgreSQL de prueba conectada y sin despliegue. NO MERGE.**
+**Estado: CANDIDATO; probado sobre PostgreSQL 17 DESCARTABLE en GitHub Actions (migraciones 8/8, seed small, venta 201, RN-09 409/rollback, transferencia y EXPLAIN). NO DESPLEGADO EN NUBE. NO MERGE.**
 
 ## Objetivo y alcance
 - Etapa 8, consigna p.19: demostrar una regla de negocio en la nube.
@@ -46,3 +46,11 @@ El workflow de GitHub Actions repite los tests en Python 3.13 y 3.14. Estos test
 - No modificar Supabase FULL, Network Restrictions actuales ni el frontend Vercel productivo.
 
 Fuente: TPI_Bodegas_del_Atuel.pdf (Etapas 8 y 9); docs vigentes de Render Free y Supabase Free consultados el 10/11/2026.
+
+## Evidencia real de PostgreSQL descartable en CI (10/11/2026)
+
+- [GitHub Actions, ejecución completa](https://github.com/videlalauti/trabajo_integrador_bd/actions/runs/42840387018): 8 migraciones reales, perfil small, API FastAPI alternativa autenticada, venta 201, rechazo RN-09 409/P0001 con conteos y stock invariantes, transferencia procesada y EXPLAIN (ANALYZE, BUFFERS) de una consulta SELECT; **SUCCESS**.
+- Comprobante de venta de ensayo número 101 y transferencia de ensayo número 11; estos IDs pertenecen únicamente al contenedor efímero de GitHub.
+- El plan de consulta pequeña mostró Hash Join + HashAggregate + Sort/Limit, tiempo de ejecución aprox. 0,211 ms. No extrapolar ese valor a FULL en Supabase.
+- CI adicional fail-closed con Python 3.13 y 3.14: 61 pruebas offline aprobadas por versión.
+- Estas evidencias **no sustituyen** demostrar al menos una regla dentro de la nube del proyecto de ensayo y no acreditan que las operaciones de escritura puedan ejecutarse en Render productivo (continúa H1).
