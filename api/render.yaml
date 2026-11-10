@@ -1,0 +1,58 @@
+# Blueprint de Render para la API (Fase 8, Antonio).
+# Ubicación: api/render.yaml. Al crear el Blueprint en Render, indicar esta
+# ruta en el campo "Blueprint Path" (Render busca render.yaml en la raíz por defecto).
+#
+# IMPORTANTE: el servicio se crea manualmente desde el Dashboard. Este archivo
+# documenta la configuración acordada; NO crear un Blueprint con él sin
+# coordinarlo (duplicaría el servicio). Si se crea manualmente, las opciones y
+# variables se verifican en el panel: este archivo no las aplica solo.
+#
+# Secretos: NUNCA en este archivo. Las variables con "sync: false" se cargan
+# a mano en el panel de Render al crear el servicio.
+services:
+  - type: web
+    name: bodegas-atuel-api
+    runtime: docker
+    plan: free
+    # Elegir la región más cercana a la del proyecto de Supabase (latencia).
+    region: oregon
+    # Rama a desplegar: la define coordinación.
+    branch: integracion/fase8
+    # Despliegues solo manuales durante la integración. Entre comillas: sin
+    # ellas, YAML interpreta off como el booleano false.
+    autoDeployTrigger: "off"
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Render solo da por sano el despliegue si /salud responde 200,
+    # es decir, con PostgreSQL conectado como bodega_api y con TLS activo.
+    healthCheckPath: /salud
+    envVars:
+      # Host del Session pooler (aws-<n>-<region>.pooler.supabase.com).
+      - key: DB_HOST
+        sync: false
+      # Session pooler. El 6543 (Transaction pooler) es rechazado por la API.
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        value: postgres
+      # Formato bodega_api.<PROJECT_REF>. Nunca postgres.
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Mínimo require. Para verify-full, cargar el certificado de Supabase
+      # como Secret File y apuntar DB_SSLROOTCERT a /etc/secrets/<archivo>.
+      - key: DB_SSLMODE
+        value: require
+      - key: DB_POOL_MIN
+        value: "1"
+      - key: DB_POOL_MAX
+        value: "2"
+      - key: DB_CONNECT_TIMEOUT
+        value: "10"
+      - key: DB_POOL_TIMEOUT
+        value: "10"
+      # Un solo proceso (ver Dockerfile): conexiones totales = DB_POOL_MAX.
+      - key: WEB_CONCURRENCY
+        value: "1"
