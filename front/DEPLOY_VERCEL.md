@@ -1,5 +1,14 @@
 # Despliegue de Vercel Hobby — Fase 8 (H1 SOLO LECTURA)
 
+## Nota posterior a la preparación — 10/11/2026
+
+**Estado operativo posterior:** el frontend quedó publicado en **<https://bodegas-del-atuel.vercel.app>**, con backend productivo H1 en **<https://bodegas-atuel-api.onrender.com>**. Este archivo original describía el estado **previo al despliegue** de la propuesta de Lautaro (incluida la frase «NO desplegado» y tareas pendientes), por lo que esos renglones deben leerse como evidencia histórica y no como estado actual.
+
+La arquitectura, los resultados cloud de la demo separada y los controles de aceptación restantes están documentados en [`../fase8/CIERRE_Y_EVIDENCIAS.md`](../fase8/CIERRE_Y_EVIDENCIAS.md) y [`../fase8/ACTA_CONTROL_FINAL_2026-11-10.md`](../fase8/ACTA_CONTROL_FINAL_2026-11-10.md). La prueba HTTP 3/3 de negocio se hizo sobre **Supabase DEMO** y no habilita escrituras en el frontend público. Los ítems de la lista original que requieran capturas de navegador todavía deben contrastarse contra evidencias auténticas.
+
+---
+
+
 **Responsable:** Lautaro. **Estado:** configuración final preparada para revisión. NO desplegado, NO fusionado.
 
 ## Configuración aprobada para revisar
