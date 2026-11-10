@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
 from app.core.demo_guard import (
-    ConfiguracionDemoInsegura, GuardianDemoAislada, validar_configuracion_demo,
+    ConfiguracionDemoInsegura, GuardianDemoAislada, _bearer_valido, validar_configuracion_demo,
 )
 
 TOKEN = "x" * 64  # Token FICTICIO solo de test
@@ -162,3 +162,23 @@ def test_credenciales_no_se_imprimen(monkeypatch, cliente):
     assert res.status_code == 503
     assert "postgres" not in res.text and TOKEN not in res.text
     assert llamadas == []
+
+
+@pytest.mark.parametrize("malformado", [
+    "Bearer contraseña-española",
+    "Bearer tóken-no-ASCII-ñ",
+    "Bearer 🙃🙃🙃",
+    "Basic " + TOKEN,
+    "Bearer " + TOKEN + "ñ",
+    "Bearer",
+    "",
+])
+def test_token_malformado_o_unicode_devuelve_falso_sin_typeerror(malformado):
+    assert _bearer_valido(malformado, TOKEN) is False
+
+
+def test_bearer_valido_solo_con_token_exacto():
+    assert _bearer_valido(f"Bearer {TOKEN}", TOKEN)
+    assert _bearer_valido(f"bearer {TOKEN}", TOKEN)
+    assert not _bearer_valido(f"Bearer {TOKEN}x", TOKEN)
+
