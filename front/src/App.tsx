@@ -34,7 +34,7 @@ function App() {
     <BrowserRouter>
       <header>
         <h1>Bodegas del Atuel</h1>
-        <p>Sistema de gestión — Fase 7</p>
+        <p>Sistema de gestión — Fase 8</p>
 
         <nav aria-label="Navegación principal">
           {enlaces.map((enlace) => (
