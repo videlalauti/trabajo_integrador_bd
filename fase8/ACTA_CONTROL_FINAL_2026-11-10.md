@@ -13,7 +13,7 @@
 | TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **CONFIGURADO**; falta conexión fallida desde IP no autorizada |
 | Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **PARCIAL**: auditoría exhaustiva del historial Git pendiente |
 | Rol mínimo de API | `bodega_api`, no propietario; TLS y rol efectivo revisados vía healthcheck y roles | **CUMPLIDO EN EJECUCIÓN** |
-| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **PENDIENTE DE ACREDITACIÓN PRIMARIA**: hash/log/27 conteos origen-destino |
+| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **PARCIALMENTE ACREDITADO**: archivo, tamaño y SHA-256 informados por cálculo local; falta log y comparación 27 conteos del destino |
 | Regla de negocio cloud, con captura | Render DEMO: venta n.º3, rechazo RN-09 409/P0001 y transferencia n.º2 `procesado`; auditadas por SQL READ ONLY | **CUMPLIDO** |
 | README reproducible + URLs | Actualizado en Draft PR #23, junto con `CIERRE_Y_EVIDENCIAS.md` | **PREPARADO**; pendiente revisión/fusión |
 | Cualquier persona abre URL y usa sistema | Catálogo y reportes accesibles con H1; para escrituras se usa API demo con token y datos ficticios | **ALCANCE POR CONFIRMAR CON CÁTEDRA** |
@@ -57,14 +57,16 @@ Ejemplos: `cliente=20000`, `comprobante=150000`, `renglon_comprobante=500000`, `
 | Dato | Valor / procedencia |
 | --- | --- |
 | Archivo FULL final reportado | `g1c_final_full_REINTENTO_20261109_225055.dump` |
-| Tamaño reportado | 10.452.417 bytes (**requiere verificación sobre el archivo real**) |
+| Tamaño del dump FULL final | **10.452.417 bytes** según salida de `Get-Item` proporcionada el 10/11/2026; coincide con el tamaño previamente reportado, sin acceso directo al archivo desde esta auditoría |
 | Formato/alcance reportados | CUSTOM / `public` |
 | Destino local reportado | Contenedor `bodegas-g1c-restauracion-pg17`, BD `bodegas_g1c_final_full`, PostgreSQL 17.11 |
 | Restore reportado | Correcto; opciones `--no-owner --no-acl --clean --if-exists --exit-on-error` solo destino local |
-| SHA-256 **primario del dump final** | **FALTA** (no confundir con hash del dump `g1c_prelogistica_...`) |
+| SHA-256 **del dump final** | `B5E48E30A0AB0011E99DD2FA3664C0C315B15BC5F4C7196EA3106A6571BED055` — valor comunicado por Valentino tras ejecutar `Get-FileHash -Algorithm SHA256` sobre el dump final, **formato hexadecimal de 64 caracteres validado**. Pendiente de corroboración independiente contra el mismo archivo, si se requiere |
 | Código de salida + log `pg_restore` | **FALTA como evidencia primaria** |
 | 27 conteos destino + comparador contra origen | **FALTA** |
 | Propietarios/ACL del destino | **No equivalentes automáticamente** con `--no-owner --no-acl` |
+
+**Trazabilidad del SHA:** no se obtuvo del servidor Supabase ni del repositorio: es el hash SHA-256 calculado por el coordinador en su PC y transmitido en el chat el 10/11/2026. Coincide el nombre y el tamaño que mostró PowerShell; la existencia y contenido del archivo no fueron inspeccionados por esta auditoría. No reemplazar el hash por el correspondiente al dump previo a logística (`g1c_prelogistica_...`).
 
 **Procedimiento solo lectura en el equipo que conserva dump y restore** (PowerShell, sin nuevos restores ni conexión cloud):
 
@@ -110,7 +112,8 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] Sistema productivo HTTPS H1; salud y base protegidos.
 - [x] Venta, RN-09 y transferencia 3/3 DEMO cloud verificadas; no repetir POST.
 - [x] Pruebas autenticación demo 401/401/403 y preflight autenticado.
-- [ ] SHA-256 real del **dump final**, inventario `pg_restore -l` y log con código de salida.
+- [x] Nombre, tamaño y SHA-256 del dump FINAL **informados mediante salida de PowerShell**, con formato SHA-256 válido; corroboración independiente opcional sobre el archivo original.
+- [ ] Inventario `pg_restore -l` y log primario con código de salida.
 - [ ] Conteos 27/27 de la **base LOCAL ya restaurada** y salida comparador.
 - [ ] Prueba negativa de red desde IP externa.
 - [ ] Análisis completo del historial Git (no solamente PRs).
