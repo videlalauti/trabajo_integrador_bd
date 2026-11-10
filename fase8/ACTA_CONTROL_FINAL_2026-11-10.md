@@ -18,6 +18,17 @@
 | README reproducible + URLs | Actualizado en Draft PR #23, junto con `CIERRE_Y_EVIDENCIAS.md` | **PREPARADO**; pendiente revisión/fusión |
 | Cualquier persona abre URL y usa sistema | Catálogo y reportes accesibles con H1; para escrituras se usa API demo con token y datos ficticios | **ALCANCE POR CONFIRMAR CON CÁTEDRA** |
 
+## 1.1 Control independiente de privilegios en FULL
+
+Consulta READ ONLY a `pg_roles` y `pg_class` del 10/11/2026:
+
+- Existen roles separados `bodega_propietario` (**NOLOGIN**), `bodega_api_rw` (**NOLOGIN**), `bodega_reportes_ro` (**NOLOGIN**), `bodega_admin`, `bodega_api` y `bodega_reportes`.
+- El login `bodega_api` tiene `rolsuper=false`, `rolcreatedb=false`, `rolcreaterole=false` y `rolbypassrls=false`; hereda `bodega_api_rw`, no `bodega_propietario`.
+- Tablas auditadas `comprobante`, `stock_sala`, `stock_deposito` y `vino` son propiedad de `bodega_propietario`. `bodega_api` **no** tiene privilegio `TRUNCATE` en ninguna de ellas.
+- El rol API sí conserva operaciones autorizadas del sistema (por ejemplo `INSERT` sobre `comprobante` y `vino`); la prohibición **H1 de escrituras públicas** depende además del guardián de FastAPI y no se debe equiparar con un rol SQL exclusivamente lector.
+
+Esto evidencia separación entre **usuario de conexión**, **rol propietario** y **protección HTTP**. No se cambió ninguna ACL ni rol.
+
 ## 2. Conteos de origen FULL obtenidos directamente
 
 Se ejecutó el SQL **solo SELECT** `fase8/verificacion/sql/01_conteos_public.sql` sobre el proyecto productivo el 10/11/2026, **después** de la recuperación FULL reportada por el equipo. Resultado real: **27/27 tablas presentes**, volcado en [`evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv`](evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv).
