@@ -2,7 +2,7 @@
 
 Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador de Bases de Datos, Ingeniería en Sistemas de Información. El proyecto abarca el modelado y las reglas de negocio en PostgreSQL, una API REST en FastAPI y una aplicación web en React.
 
-**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas en local; **Fase 8 desplegada en la nube y en proceso de cierre de aceptación**, con frontend y API públicos de solo lectura, base PostgreSQL FULL protegida y una segunda API aislada para ensayos controlados. La Fase 9 y la demostración operativa final siguen pendientes. La regla de negocio ya fue demostrada por HTTPS en la base ficticia aislada. La Fase 8 todavía requiere cerrar evidencia primaria de backup/restauración, controles de seguridad restantes y la aceptación del alcance de demostración con la cátedra.
+**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas en local; **Fase 8 desplegada en la nube y en proceso de cierre de aceptación**, con frontend y API públicos de solo lectura, base PostgreSQL FULL protegida y una segunda API aislada para ensayos controlados. La Fase 9 y la demostración operativa final siguen pendientes. La regla de negocio ya fue demostrada por HTTPS en la base ficticia aislada. La Fase 8 ya tiene acreditados los controles funcionales, los 27/27 conteos restaurados, los 15/15 controles estructurales, el bloqueo IP y el triage de Gitleaks. Su aceptación final todavía requiere documentar las limitaciones del registro original de restauración y acordar con la cátedra el alcance de la demostración H1 + DEMO.
 
 ## Fase 8 — versión pública HTTPS
 
@@ -206,6 +206,6 @@ trabajo_integrador_bd/
 
 ## Alcance y siguientes fases
 
-La Fase 7 demuestra la integración **local** de los tres niveles y las reglas de negocio visibles en la interfaz. La **Fase 8 ya dispone de URLs públicas HTTPS** y de una arquitectura con bases FULL y DEMO separadas, con la regla de negocio cloud ya probada; su aceptación definitiva exige completar los controles de seguridad restantes y el acta de backup/restauración, según la [matriz final](fase8/ACTA_CONTROL_FINAL_2026-11-10.md). La Fase 9 reunirá el informe final, la trazabilidad completa de reglas y la defensa del equipo.
+La Fase 7 demuestra la integración **local** de los tres niveles y las reglas de negocio visibles en la interfaz. La **Fase 8 ya dispone de URLs públicas HTTPS** y de una arquitectura con bases FULL y DEMO separadas, con la regla de negocio cloud ya probada; su aceptación definitiva exige revisar las evidencias ya reunidas y acordar el alcance H1/demo con la cátedra, sin presentar como disponible el log original del restore, según la [matriz final](fase8/ACTA_CONTROL_FINAL_2026-11-10.md). La Fase 9 reunirá el informe final, la trazabilidad completa de reglas y la defensa del equipo.
 
 Repositorio: <https://github.com/videlalauti/trabajo_integrador_bd>
