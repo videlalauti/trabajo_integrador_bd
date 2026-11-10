@@ -11,7 +11,7 @@
 | Migraciones SQL y tres roles | 001–008 implementadas; rol API no propietario; proyecto DEMO usa 007 adaptado al servicio gestionado | **CUMPLIDO TÉCNICO**; anexar prueba documental de ejecución del FULL |
 | Datos cloud, 10.000+ filas | 27 conteos del FULL consultados el 10/11; comprobante 150.000, renglón 500.000 | **CUMPLIDO** |
 | TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **CONFIGURADO**; falta conexión fallida desde IP no autorizada |
-| Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **PARCIAL**: auditoría exhaustiva del historial Git pendiente |
+| Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **3/3 HALLAZGOS TRIADOS:** Gitleaks examinó 132 commits y devolvió 3 alertas (código 1); revisión de los commits originales clasifica los tres como falsos positivos de comentarios SQL/fixture de tests. El reporte de triage está documentado; ninguna herramienta prueba ausencia absoluta de secretos. |
 | Rol mínimo de API | `bodega_api`, no propietario; TLS y rol efectivo revisados vía healthcheck y roles | **CUMPLIDO EN EJECUCIÓN** |
 | Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **CONTEOS 27/27 COINCIDENTES**: origen verificado con SQL directo, destino obtenido de salida PostgreSQL 17.11 local aportada por Valentino; hash y tamaño informados por cálculo local. Falta log/inventario primario del restore y comparación detallada de definiciones/ACL posrestore; **15/15 conteos estructurales ya coinciden**. |
 | Regla de negocio cloud, con captura | Render DEMO: venta n.º3, rechazo RN-09 409/P0001 y transferencia n.º2 `procesado`; auditadas por SQL READ ONLY | **CUMPLIDO** |
@@ -115,6 +115,9 @@ Los nombres coinciden con el patrón porque `logistica` incluye la cadena `log`;
 
 **Escaneo ampliado informado por Valentino (10/11/2026):** Gitleaks oficial en Docker `ghcr.io/gitleaks/gitleaks:latest`, sobre el repositorio local, con `git /repo --log-opts="--all" --redact=100` después de actualizar referencias. Salida de resumen: **131 commits escaneados, 3 posibles secretos, código de salida 1**. **Estado: ALERTAS SIN CLASIFICAR.** El código 1 refleja detecciones del escáner y no por sí solo fallo de Docker. No está demostrado si son credenciales reales, pruebas o falsos positivos. **No fusionar PRs ni declarar aprobado el historial de secretos hasta revisar regla, archivo, línea y commit sin revelar coincidencias.** La auditoría documental inicial sobre los 23 PR no sustituye esta nueva detección. No se registran ni se publican valores de posibles secretos en esta acta.
 
+
+**Resultado posterior del triage:** **3 de 3 alertas analizadas y clasificadas como falsos positivos** mediante lectura de archivos en commits históricos exactos. Dos son comentarios SQL sin credenciales y la tercera una constante sintética de prueba unitaria para asegurar que el secreto no se exponga en errores. Evidencia no sensible: [clasificación detallada](evidencias/TRIAGE_GITLEAKS_2026-11-10.md). El escáner continúa informando 3 alertas/código 1: no declarar ejecución limpia o 0 findings. No se publicó ningún valor de clave.
+
 **GitHub — alcance limitado:** se revisaron con patrones de detección las líneas agregadas en los parches de **PR #1–#23**. Los avisos identificados se relacionan con **URLs deliberadamente inválidas de tests en `example.com`**, credenciales de **PostgreSQL efímero local del workflow de CI** y token simulado CI; no se detectó en esta pasada una credencial productiva verificable. Es una revisión heurística de los **parches de PR**, **no cubre** commits directos, blobs eliminados, todos los refs, ni todos los formatos de secreto. **NO declarar “historial completamente limpio”**.
 
 Para auditar **todo** el historial en un clon completo y actualizado con Gitleaks v8.19+ (lectura, sin publicarlo), desde PowerShell en la raíz del repo:
@@ -139,7 +142,7 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] **15/15 controles estructurales** y stock negativo comparados entre origen y destino, con salida original y copia local documentadas.
 - [ ] Comparación de **definiciones** de objetos y permisos/propietarios, si se exige equivalencia total; las ACL no se restauraron automáticamente.
 - [ ] Prueba negativa de red desde IP externa.
-- [ ] Análisis completo del historial Git (no solamente PRs).
+- [x] Escaneo con Gitleaks de **132 commits** del historial local accesible y **triage manual de las 3 alertas** (falsos positivos); persistencia de 3 findings y código 1 documentada.
 - [ ] Revisión y fusión **controlada** de PR #23; PR #22 de la demo permanece separado.
 - [ ] Confirmar con la cátedra si H1 público + demostración autenticada en base ficticia satisface “usar el sistema”.
 
