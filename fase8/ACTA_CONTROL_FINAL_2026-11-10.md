@@ -100,6 +100,17 @@ python -B .\fase8\verificacion\scripts\comparar_conteos_estricto.py --origen .\f
 ```
 El CSV origen estará disponible después de incorporar este PR o al obtener el archivo directamente desde la rama documental. **Si el destino no existe o falla un comando, STOP:** no recrear, limpiar, ni restaurar otra vez para obtener evidencias sin evaluación.
 
+
+## 3.1 Búsqueda de log original en equipo de coordinación (10/11/2026)
+
+Valentino ejecutó una enumeración **solo lectura** de archivos bajo `%LOCALAPPDATA%\BodegasFase8`, filtrando nombres por `restore|restaur|log|acta`. Los únicos resultados aportados fueron archivos `.dump` de **pre/postlogística**:
+
+- `g1c_postlogistica_public_20261109_212311.dump` — **0 bytes**; no es una copia válida utilizable para recuperación.
+- `g1c_postlogistica_public_20261109_212613.dump` — **423.506 bytes**; copia intermedia, **no** es el FULL definitivo.
+- `g1c_prelogistica_public_20261109_194221.dump` — **318.347 bytes**; copia intermedia, **no** es el FULL definitivo.
+
+Los nombres coinciden con el patrón porque `logistica` incluye la cadena `log`; **ninguno es un log de ejecución de `pg_restore`**. Por tanto **no se localizó un acta/log primario dentro de esa carpeta con ese filtro**. No implica que el log no exista en PowerShell, otra carpeta u otro equipo. La restauración ya quedó corroborada por 27/27 conteos, 15/15 métricas estructurales y `pg_restore --list` del dump final, sin reejecutar `pg_restore`. El resultado/código de salida original sigue **no acreditado documentalmente**.
+
 ## 4. Auditoría preliminar de secretos e IP
 
 **GitHub — alcance limitado:** se revisaron con patrones de detección las líneas agregadas en los parches de **PR #1–#23**. Los avisos identificados se relacionan con **URLs deliberadamente inválidas de tests en `example.com`**, credenciales de **PostgreSQL efímero local del workflow de CI** y token simulado CI; no se detectó en esta pasada una credencial productiva verificable. Es una revisión heurística de los **parches de PR**, **no cubre** commits directos, blobs eliminados, todos los refs, ni todos los formatos de secreto. **NO declarar “historial completamente limpio”**.
