@@ -10,7 +10,7 @@
 | Front/API HTTPS público | `https://bodegas-del-atuel.vercel.app` y `https://bodegas-atuel-api.onrender.com`; H1 solo lectura | **CUMPLIDO**, con alcance H1 a explicar |
 | Migraciones SQL y tres roles | 001–008 implementadas; rol API no propietario; proyecto DEMO usa 007 adaptado al servicio gestionado | **CUMPLIDO TÉCNICO**; anexar prueba documental de ejecución del FULL |
 | Datos cloud, 10.000+ filas | 27 conteos del FULL consultados el 10/11; comprobante 150.000, renglón 500.000 | **CUMPLIDO** |
-| TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **CONFIGURADO**; falta conexión fallida desde IP no autorizada |
+| TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **APROBADO**: conexión desde PC externa a Session Pooler DEMO rechazada explícitamente con `EADDRNOTALLOWED`, mensaje `address not in tenant allow_list`, `psql` código 2; no se ejecutó SQL. Evidencia anonimizada en `evidencias/PRUEBA_RECHAZO_IP_SUPABASE_DEMO_2026-11-10.md` |
 | Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **3/3 HALLAZGOS TRIADOS:** Gitleaks examinó 132 commits y devolvió 3 alertas (código 1); revisión de los commits originales clasifica los tres como falsos positivos de comentarios SQL/fixture de tests. El reporte de triage está documentado; ninguna herramienta prueba ausencia absoluta de secretos. |
 | Rol mínimo de API | `bodega_api`, no propietario; TLS y rol efectivo revisados vía healthcheck y roles | **CUMPLIDO EN EJECUCIÓN** |
 | Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **CONTEOS 27/27 COINCIDENTES**: origen verificado con SQL directo, destino obtenido de salida PostgreSQL 17.11 local aportada por Valentino; hash y tamaño informados por cálculo local. Falta log/inventario primario del restore y comparación detallada de definiciones/ACL posrestore; **15/15 conteos estructurales ya coinciden**. |
@@ -127,7 +127,7 @@ gitleaks git --log-opts="--all" --redact .
 ```
 Si la utilidad no está instalada, documentar la ausencia y usar otro análisis de historial equivalente antes de declarar completado. Tratar los hallazgos como sensibles, analizar los falsos positivos de los tests y **no subir el informe con secretos** al repo. El comando puede terminar con código 1 al detectar hallazgos; investigar antes de firmar.
 
-**Red DENEGADA desde origen externo:** el Dashboard DEMO muestra exclusivamente los dos CIDR Render, pero falta un intento `psql` desde una conexión de Internet realmente ajena a esas redes. Debe utilizarse el host Session Pooler DEMO con usuario **solo de ensayo** y contraseña introducida de forma oculta (nunca en URL ni en comandos), ejecutar un simple `SELECT 1` y conservar solo el resultado redactado. No clasificar un error de contraseña como bloqueo de IP. Esta comprobación no se puede simular desde una conexión administrativa que elude las restricciones de la plataforma.
+**Red DENEGADA desde origen externo — COMPROBADO:** el Dashboard DEMO muestra solamente los dos CIDR de Render; el 10/11/2026 Valentino intentó acceder desde la PC local mediante `psql` al **Session Pooler DEMO**, y Supabase respondió `FATAL: (EADDRNOTALLOWED) address not in tenant allow_list`, código de salida `2`. Se confirmó que **esa IP externa concreta fue rechazada antes de ejecutar `SELECT 1`**. No fue un error de contraseña ni se acreditó autenticación: el control observado es de **restricción de red**. La salida anonimizada consta en [evidencia de bloqueo IP](evidencias/PRUEBA_RECHAZO_IP_SUPABASE_DEMO_2026-11-10.md). No repetir prueba ni alterar permisos.
 
 ## 5. Aprobación final pendiente
 
@@ -141,7 +141,7 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] Conteos **27/27** de la **base LOCAL restaurada**, proporcionados como salida CSV de PowerShell y comparados exactamente contra Supabase FULL; evidencia y acta publicadas.
 - [x] **15/15 controles estructurales** y stock negativo comparados entre origen y destino, con salida original y copia local documentadas.
 - [ ] Comparación de **definiciones** de objetos y permisos/propietarios, si se exige equivalencia total; las ACL no se restauraron automáticamente.
-- [ ] Prueba negativa de red desde IP externa.
+- [x] Rechazo por IP externa en DEMO verificado: `EADDRNOTALLOWED`, `address not in tenant allow_list`, salida `2` y evidencia anonimizada, sin conexión ni SQL ejecutado.
 - [x] Escaneo con Gitleaks de **132 commits** del historial local accesible y **triage manual de las 3 alertas** (falsos positivos); persistencia de 3 findings y código 1 documentada.
 - [ ] Revisión y fusión **controlada** de PR #23; PR #22 de la demo permanece separado.
 - [ ] Confirmar con la cátedra si H1 público + demostración autenticada en base ficticia satisface “usar el sistema”.
