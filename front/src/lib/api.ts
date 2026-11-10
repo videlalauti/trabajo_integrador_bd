@@ -1,3 +1,10 @@
+// CSRF temporal por sesión web: nunca persistir en localStorage ni en el bundle.
+let csrfSesion: string | null = null
+
+export function establecerCsrfSesion(valor: string | null): void {
+  csrfSesion = valor
+}
+
 
 export class ErrorApi extends Error {
   readonly status: number
@@ -61,6 +68,13 @@ export async function solicitarApi<T>(
   if (opciones.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
+  const metodo = (opciones.method ?? 'GET').toUpperCase()
+  if (metodo !== 'GET' && metodo !== 'HEAD' && metodo !== 'OPTIONS') {
+    if (!csrfSesion) {
+      throw new ErrorApi(401, 'SESION_REQUERIDA', 'Iniciá sesión de evaluación para operar.')
+    }
+    headers.set('X-CSRF-Token', csrfSesion)
+  }
 
   let respuesta: Response
 
@@ -68,6 +82,8 @@ export async function solicitarApi<T>(
     respuesta = await fetch(`/api${rutaNormalizada}`, {
       ...opciones,
       headers,
+      credentials: 'same-origin',
+      cache: 'no-store',
     })
   } catch {
     throw new ErrorApi(
