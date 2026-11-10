@@ -57,22 +57,22 @@ Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y tran
 6. Restringir la red de la BD a los CIDR de salida verdaderos del backend; conservar vías administrativas necesarias. Probar rechazo desde IP ajena de manera que se distinga de error de autenticación.
 7. Construir y desplegar `api/Dockerfile` para la aplicación pública con **H1 habilitado**. Comprobar `GET /salud` (estado 200, conexión y TLS), `GET /vinos` y rechazos de métodos bloqueados.
 8. Compilar y publicar `front/` en Vercel Hobby, con el rewrite `/api/:path*` apuntando a la URL HTTPS **real** del backend y el fallback `/(.*)` a `/index.html`. Verificar `/api/salud`, catálogo, ranking, recarga de rutas y que no se envíen POST en H1.
-9. Mantener las pruebas que escriben sobre una **base descartable** usando `api/Dockerfile.demo` y `app.demo_main`, token bearer exclusivo, `FASE8_DEMO_PROJECT_REF` distinto de FULL y los gates de `fase8/demo_aislada/README.md`. No activar esta API hasta revisar controles de seguridad.
-10. Crear `pg_dump` del origen, restaurar con `pg_restore` o `psql` en una **base NUEVA**, ejecutar los mismos SELECT de conteos/integridad antes y después, y archivar hash, comandos y resultados sin secretos.
+9. Mantener las pruebas que escriben sobre una **base descartable** usando `api/Dockerfile.demo` y `app.demo_main`, token bearer exclusivo, `FASE8_DEMO_PROJECT_REF` distinto de FULL y los controles de `fase8/demo_aislada/README.md`. La API DEMO ya fue desplegada y auditada: **no ejecutar nuevamente los seis POST del ensayo**; cualquier instancia adicional requerirá revisión de seguridad previa.
+10. **Reproducción para un nuevo entorno autorizado, NO una tarea pendiente sobre FULL:** generar `pg_dump` de un origen de prueba permitido, restaurar con `pg_restore` o `psql` en una **base nueva**, comparar conteos e integridad y archivar hash y salidas sin secretos. La restauración FULL del trabajo **ya se realizó** en la base local independiente y se validaron 27/27 conteos y 15/15 controles estructurales; no repetirla.
 
 ## 6. Estado de aceptación y evidencia exigida
 
 | Criterio de etapa 8 (consigna pp. 18–19) | Estado y respaldo |
 | --- | --- |
 | PostgreSQL en nube; API y frontend públicos HTTPS | **Verificado**: URLs públicas; Render productivo y Vercel, SQL cloud FULL. |
-| Migraciones y volumen mínimo cloud | **Verificado en implementaciones**; consolidar log/captura y conteos finales FULL. |
+| Migraciones y volumen mínimo cloud | Esquema y funciones desplegados según migraciones versionadas; **27/27 conteos FULL obtenidos por SELECT y guardados en CSV** (incluye 500.000 renglones). El log primario de aplicación de las migraciones no está anexado. |
 | TLS, rol mínimo, secretos en proveedor y puerto restringido | **APROBADO en los controles realizados**: TLS confirmado en salud de DEMO, rol API no propietario auditado, allowlist comprobada con rechazo real `EADDRNOTALLOWED` desde IP externa y Gitleaks 132 commits / 3 falsos positivos revisados y documentados (código bruto 1). No prueba ausencia absoluta de secretos ni equivalencia de ACL de la restauración. |
 | Backup `pg_dump`, restauración en base nueva y conteos coincidentes | **27/27 CONTEOS IGUALES:** el origen Supabase consultado directamente y la salida de destino local PostgreSQL 17.11 aportada por Valentino coinciden, con acta [aquí](evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md). Tamaño y SHA-256 final informados por PowerShell. Los **15 controles estructurales de origen/destino también coinciden**. El dump CUSTOM pudo abrirse y listar objetos mediante `pg_restore --list` (cliente 18.6; se aportaron 15 FK al final del TOC). Faltan el log primario/código de salida de la restauración y contraste de definiciones de objetos/ACL. |
 | Trigger funcionando en nube | **APROBADO**: venta HTTP 201, RN-09 HTTP 409/P0001 sin filas extra ni cambios de stock y transferencia procesada en API Render DEMO con PostgreSQL cloud; auditoría independiente documentada en sección 7. |
 | README con URL pública y reproducción | Actualización preparada en el Draft PR documental; pendiente integrar y revisar la versión publicada. |
 | Cualquier persona abre URL y usa el sistema | **Parcial**: consulta pública real funcionando, pero las operaciones de escritura quedan restringidas por H1. Confirmar con cátedra si demo separada cumple este criterio. |
 
-### Próximos gates (sin modificar FULL)
+### Cierre documental y pendientes (sin modificar FULL)
 
 1. **Antonio:** completó GET sin token (`401`, `401`, `403`), preflight autenticado y un único ensayo funcional por HTTPS con resultado **3/3**; ya auditado.
 2. **Coordinación:** conservar sin repetir la evidencia del ensayo cloud; mantener el token privado y el entorno H1 protegido. Revisar con cátedra el alcance de la demostración separada.
@@ -80,7 +80,7 @@ Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y tran
 4. **Lautaro:** capturas de Vercel y navegación H1, HTTPS, rewrite y ausencia de operaciones de escritura públicas.
 5. **Equipo:** el rechazo desde IP no permitida está comprobado y las tres alertas Gitleaks quedaron triadas; completar revisión/fusión documental y acordar con cátedra el alcance H1 + demo aislada para Fase 8/9.
 
-**Regla de seguridad para el cierre:** sin deshabilitar H1 productivo, sin PR #22 a producción, sin tocar FULL para pruebas de negocio y sin fusionar ni desplegar automáticamente esta documentación.
+**Regla de seguridad para el cierre:** no deshabilitar H1 productivo, no fusionar el PR #22 hacia la API productiva, no tocar FULL para pruebas de negocio. La integración del PR documental #23 no exige despliegue ni operaciones de base de datos.
 
 ## 7. Evidencia confirmada: venta, RN-09 y transferencia HTTPS cloud (10/11/2026)
 
@@ -102,4 +102,4 @@ El comprobante 3 presenta subtotal **1.300,00**, descuento **130,00** y total **
 
 **Auditoría READ ONLY de la FULL posterior:** vinos **750**, clientes **20.000**, comprobantes **150.000**, renglones **500.000**, transferencias **2.000**, stock salas **88.538.020** y depósito **22.384.854**, sin cambios respecto de los controles previos. No se ejecutaron escrituras contra FULL.
 
-**Resultado:** **demostración técnica de reglas de negocio en la nube APROBADA** mediante API separada. La Fase 8 en su conjunto **NO** queda automáticamente cerrada: siguen pendientes el log de la restauración original, inventario TOC completo si se exige y la comparación de definiciones/ACL individuales (ya coinciden 27/27 conteos y 15/15 controles estructurales; `pg_restore --list` leyó el dump sin errores), (ya aprobado el rechazo de IP externa DEMO y el triage de 3 falsos positivos Gitleaks, aunque el escáner mantiene código 1), más confirmación del alcance H1/demo con la cátedra.
+**Resultado:** la demostración de reglas de negocio en la nube está **APROBADA** sobre la API y base DEMO separadas. También están comprobados el rechazo desde IP externa, el triage de 3 alertas Gitleaks (el escáner bruto mantiene código 1), los 27/27 conteos y los 15/15 controles estructurales del restore. **La aceptación integral de Fase 8 todavía requiere validar con la cátedra que el frontend público H1 de solo lectura y la demo autenticada satisfacen «usar el sistema».** El log de la restauración original no se localizó; no debemos inventarlo ni presentar el `pg_restore --list` posterior como ese log. Una comparación de definiciones y ACL exactas del destino no está acreditada, especialmente porque el restore empleó `--no-owner --no-acl`.
