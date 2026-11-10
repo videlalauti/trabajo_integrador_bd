@@ -1,0 +1,70 @@
+name: Fase 8 - Frontend H1 Vercel offline
+
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+    paths:
+      - "front/**"
+      - ".github/workflows/fase8-front-vercel.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compilar-y-auditar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: "true"
+    steps:
+      - name: Checkout del codigo revisado
+        uses: actions/checkout@v4
+
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Validar JSON, rutas publicas y proteccion visual H1 sin red
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("front")
+          v = json.loads((root / "vercel.json").read_text(encoding="utf-8"))
+          assert v["rewrites"] == [
+              {"source": "/api/:path*", "destination": "https://bodegas-atuel-api.onrender.com/:path*"},
+              {"source": "/(.*)", "destination": "/index.html"},
+          ], "Rewrites deben mantener API externa primero y SPA ultima"
+          a = (root / "src/App.tsx").read_text(encoding="utf-8")
+          for token in ("NuevoVino", "EditarVino", "NuevaVenta", "TransferenciasPage"):
+              assert token not in a, f"Componente de escritura montado: {token}"
+          for endpoint in ("/ventas/nueva", "/transferencias", "/vinos/nuevo"):
+              assert endpoint in a, f"Falta ruta de aviso bloqueado: {endpoint}"
+          informes = (root / "src/pages/reportes/TableroReportes.tsx").read_text(encoding="utf-8")
+          assert "/reportes/top-vinos" in informes
+          assert "/reportes/ventas-por-sala" not in informes
+          assert "/reportes/vinos-sin-stock" not in informes
+          cliente = (root / "src/lib/api.ts").read_text(encoding="utf-8")
+          assert "fetch(`/api${rutaNormalizada}`" in cliente, "Cliente debe utilizar rutas relativas /api"
+          print("Contrato H1 de frontend y rewrites: OK")
+          PY
+
+      - name: Instalar dependencias con lockfile
+        run: npm ci --prefix front
+
+      - name: TypeScript y build de produccion
+        run: npm run build --prefix front
+
+      - name: ESLint
+        run: npm run lint --prefix front
+
+      - name: Verificar salida compilada
+        run: |
+          test -f front/dist/index.html
+          test -d front/dist/assets
+          echo "Build frontend: OK"
