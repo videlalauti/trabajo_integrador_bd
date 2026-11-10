@@ -1,0 +1,4 @@
+HTTPS base con URL de ejemplo, sin red: OK
+Simulación HTTP 200 y JSON salud conectada: OK
+Simulación reintento tras error transitorio: OK
+Simulación salud 200 pero BD desconectada: RECHAZADO CORRECTAMENTE

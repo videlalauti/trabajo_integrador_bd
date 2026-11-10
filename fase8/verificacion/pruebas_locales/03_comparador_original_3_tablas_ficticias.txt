@@ -1,0 +1,5 @@
+tabla,origen,destino,estado
+cliente,12000,12000,OK
+comprobante,3000,3000,OK
+vino,25,25,OK
+APROBADO: conteos coincidentes y volumen mínimo alcanzado
