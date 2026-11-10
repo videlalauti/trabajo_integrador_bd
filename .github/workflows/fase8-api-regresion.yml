@@ -1,0 +1,56 @@
+name: Fase 8 - Regresion API sin base de datos
+
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+    paths:
+      - "api/**"
+      - ".github/workflows/fase8-api-regresion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regresion-sin-bd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DB_HOST: "127.0.0.1"
+      DB_USER: "bodega_api"
+      API_SOLO_LECTURA: "false"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Checkout de la rama a probar
+        uses: actions/checkout@v4
+
+      - name: Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: api/requirements.txt
+
+      - name: Instalar dependencias de la API
+        run: python -m pip install -r api/requirements.txt
+
+      - name: Verificar sintaxis (sin ejecutar modulos)
+        run: python -m compileall -q api/app api/tests
+
+      - name: Suite segura offline; excluye todas las pruebas que escriben en PostgreSQL
+        working-directory: api
+        run: |
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_bloqueo_escrituras_nube.py \
+            tests/test_clientes.py \
+            tests/test_cloud_config.py \
+            tests/test_config_nube.py \
+            tests/test_comprobantes.py \
+            tests/test_reportes.py \
+            tests/test_vinos.py
+
+      # No se ejecutan tests/test_*_integracion.py ni tests/test_ingresos.py
+      # ni tests/test_transferencias.py: requieren bases descartables
+      # y algunas pruebas escriben datos con COMMIT.
+      # Nunca se inyectan credenciales reales, secretos ni host Supabase.
