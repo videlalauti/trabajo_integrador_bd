@@ -111,21 +111,16 @@ Valentino ejecutó una enumeración **solo lectura** de archivos bajo `%LOCALAPP
 
 Los nombres coinciden con el patrón porque `logistica` incluye la cadena `log`; **ninguno es un log de ejecución de `pg_restore`**. Por tanto **no se localizó un acta/log primario dentro de esa carpeta con ese filtro**. No implica que el log no exista en PowerShell, otra carpeta u otro equipo. La restauración ya quedó corroborada por 27/27 conteos, 15/15 métricas estructurales y `pg_restore --list` del dump final, sin reejecutar `pg_restore`. El resultado/código de salida original sigue **no acreditado documentalmente**.
 
-## 4. Auditoría preliminar de secretos e IP
+## 4. Auditoría de secretos e IP — controles efectuados
 
-**Escaneo ampliado informado por Valentino (10/11/2026):** Gitleaks oficial en Docker `ghcr.io/gitleaks/gitleaks:latest`, sobre el repositorio local, con `git /repo --log-opts="--all" --redact=100` después de actualizar referencias. Salida de resumen: **131 commits escaneados, 3 posibles secretos, código de salida 1**. **Estado: ALERTAS SIN CLASIFICAR.** El código 1 refleja detecciones del escáner y no por sí solo fallo de Docker. No está demostrado si son credenciales reales, pruebas o falsos positivos. **No fusionar PRs ni declarar aprobado el historial de secretos hasta revisar regla, archivo, línea y commit sin revelar coincidencias.** La auditoría documental inicial sobre los 23 PR no sustituye esta nueva detección. No se registran ni se publican valores de posibles secretos en esta acta.
+**Escaneo cronológico de Gitleaks (10/11/2026):** Valentino ejecutó el contenedor oficial `ghcr.io/gitleaks/gitleaks:latest` en su repositorio local actualizado. Primera pasada: **131 commits y 3 alertas**. Segunda pasada, con reporte JSON privado: **132 commits y 3 alertas (`generic-api-key`), código de salida 1**. Las tres alertas estuvieron inicialmente sin clasificar; **posteriormente** se inspeccionaron los archivos exactos en sus commits de origen y quedaron clasificadas como falsos positivos (dos comentarios SQL y una constante sintética de tests). La cifra 132 es el resultado del último escaneo informado; la evaluación no garantiza ausencia absoluta de secretos. No se compartieron coincidencias ni contraseñas reales.
 
 
-**Resultado posterior del triage:** **3 de 3 alertas analizadas y clasificadas como falsos positivos** mediante lectura de archivos en commits históricos exactos. Dos son comentarios SQL sin credenciales y la tercera una constante sintética de prueba unitaria para asegurar que el secreto no se exponga en errores. Evidencia no sensible: [clasificación detallada](evidencias/TRIAGE_GITLEAKS_2026-11-10.md). El escáner continúa informando 3 alertas/código 1: no declarar ejecución limpia o 0 findings. No se publicó ningún valor de clave.
+**Resultado del triage:** **3 de 3 alertas clasificadas como falsos positivos** mediante lectura de archivos en commits históricos exactos. Ver [clasificación detallada](evidencias/TRIAGE_GITLEAKS_2026-11-10.md). El escáner sigue reportando 3 alertas/código 1, no 0 findings.
 
 **GitHub — alcance limitado:** se revisaron con patrones de detección las líneas agregadas en los parches de **PR #1–#23**. Los avisos identificados se relacionan con **URLs deliberadamente inválidas de tests en `example.com`**, credenciales de **PostgreSQL efímero local del workflow de CI** y token simulado CI; no se detectó en esta pasada una credencial productiva verificable. Es una revisión heurística de los **parches de PR**, **no cubre** commits directos, blobs eliminados, todos los refs, ni todos los formatos de secreto. **NO declarar “historial completamente limpio”**.
 
-Para auditar **todo** el historial en un clon completo y actualizado con Gitleaks v8.19+ (lectura, sin publicarlo), desde PowerShell en la raíz del repo:
-```powershell
-gitleaks version
-gitleaks git --log-opts="--all" --redact .
-```
-Si la utilidad no está instalada, documentar la ausencia y usar otro análisis de historial equivalente antes de declarar completado. Tratar los hallazgos como sensibles, analizar los falsos positivos de los tests y **no subir el informe con secretos** al repo. El comando puede terminar con código 1 al detectar hallazgos; investigar antes de firmar.
+**Procedimiento efectivamente utilizado:** puesto que Gitleaks no estaba instalado en Windows, se ejecutó su imagen oficial de Docker con el repositorio montado en modo solo lectura y los argumentos `git /repo --log-opts="--all" --redact=100`. El segundo escaneo generó un JSON privado bajo `%LOCALAPPDATA%\BodegasFase8\GitleaksPrivado`; solamente se compartieron los metadatos `RuleID`, ruta, línea y SHA corto. **Nunca subir el JSON privado** ni sus campos `Match`, `Line` o `Secret` al repositorio. Conservar el código de salida original 1 y el resultado del triage para la defensa.
 
 **Red DENEGADA desde origen externo — COMPROBADO:** el Dashboard DEMO muestra solamente los dos CIDR de Render; el 10/11/2026 Valentino intentó acceder desde la PC local mediante `psql` al **Session Pooler DEMO**, y Supabase respondió `FATAL: (EADDRNOTALLOWED) address not in tenant allow_list`, código de salida `2`. Se confirmó que **esa IP externa concreta fue rechazada antes de ejecutar `SELECT 1`**. No fue un error de contraseña ni se acreditó autenticación: el control observado es de **restricción de red**. La salida anonimizada consta en [evidencia de bloqueo IP](evidencias/PRUEBA_RECHAZO_IP_SUPABASE_DEMO_2026-11-10.md). No repetir prueba ni alterar permisos.
 
@@ -146,4 +141,4 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [ ] Revisión y fusión **controlada** de PR #23; PR #22 de la demo permanece separado.
 - [ ] Confirmar con la cátedra si H1 público + demostración autenticada en base ficticia satisface “usar el sistema”.
 
-**Cierre prohibido sin evidencias:** no confundir una demostración funcional correcta con haber terminado todos los requisitos de seguridad/recuperación de la etapa 8.
+**Condiciones del cierre:** no declarar que existe un log de restauración original ni que se replicaron propietarios y ACL sin pruebas. Los criterios de seguridad (rechazo por IP externa y triage de hallazgos) ya cuentan con evidencias; confirmar con la cátedra si el alcance H1 público + demo autenticada satisface el requisito de uso del sistema.
