@@ -82,7 +82,7 @@ export default function CatalogoVinos() {
 
   return <main>
     <h2>Catálogo de vinos</h2>
-    <p>Catálogo público de solo lectura. El alta y la edición de vinos están deshabilitadas en este despliegue.</p>
+    <p>Consultá los vinos y sus existencias en la base de ensayo.</p><p><Link to="/vinos/nuevo">Registrar un vino</Link></p>
     <h3>Filtros</h3>
     {errorCatalogos && <p role="alert">{errorCatalogos}</p>}
     <form onSubmit={aplicar}>
