@@ -55,6 +55,8 @@ def test_remoto_permite_preflight_no_muta(monkeypatch,prueba):
 
 
 def test_local_no_cambia_semantica(monkeypatch,prueba):
+    # Independencia de variables definidas por la terminal o por Render.
+    monkeypatch.delenv('API_SOLO_LECTURA', raising=False)
     monkeypatch.setenv('DB_HOST','localhost')
     cliente,efectos=prueba
     assert cliente.post('/vinos').status_code==200
