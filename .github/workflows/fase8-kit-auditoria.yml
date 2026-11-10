@@ -1,0 +1,57 @@
+name: Fase 8 - Auditoria kit de recuperacion offline
+
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+    paths:
+      - "fase8/verificacion/**"
+      - ".github/workflows/fase8-kit-auditoria.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kit-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.13', '3.14']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Comprobar sintaxis
+        run: python -m compileall -q fase8/verificacion/scripts
+
+      - name: Pruebas originales y TLS offline
+        run: python fase8/verificacion/scripts/test_kit.py
+
+      - name: Pruebas comparador de 27 tablas
+        run: python fase8/verificacion/scripts/test_comparador_estricto.py
+
+      - name: Validar manifiesto de 30 archivos y SHA-256 sin red ni BD
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          manifest = Path("fase8/verificacion/INVENTARIO_SHA256.txt")
+          rows = [row.strip() for row in manifest.read_text(encoding="utf-8").splitlines() if row.strip()]
+          assert len(rows) == 30, f"Se esperaban 30 entradas; hay {len(rows)}"
+          for n, line in enumerate(rows, 1):
+              path, size, digest = line.split(" | ")
+              p = Path(path)
+              assert p.is_file(), f"Archivo #{n} faltante: {path}"
+              raw = p.read_bytes()
+              assert len(raw) == int(size.split()[0]), f"Tamaño distinto: {path}"
+              assert hashlib.sha256(raw).hexdigest() == digest.removeprefix("sha256 "), f"SHA-256 distinto: {path}"
+          print(f"Manifiesto OK: {len(rows)}/{len(rows)}")
+          PY
