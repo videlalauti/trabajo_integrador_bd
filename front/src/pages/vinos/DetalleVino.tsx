@@ -52,7 +52,7 @@ function DetalleVinoPorCodigo({ codigo }: { codigo: number }) {
       <ul>{vino.cepas.map((c) => <li key={c.id_cepa}>{c.nombre}: {c.porcentaje}%</li>)}</ul>
       <h3>Maridajes</h3>
       {vino.maridajes.length ? <ul>{vino.maridajes.map((m) => <li key={m.id_maridaje}>{m.nombre} — {m.temperatura_servicio_c} °C</li>)}</ul> : <p>Sin maridajes asociados.</p>}
-      <Link to={`/vinos/${codigo}/editar`}>Editar vino</Link>
+      <p>Vista pública de solo lectura. La edición de vinos está deshabilitada.</p>
     </>}
   </main>
 }

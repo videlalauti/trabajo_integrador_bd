@@ -2,7 +2,7 @@ import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ErrorApi, solicitarApi } from '../../lib/api'
-import type { Bodega, Cepa, TipoVino, VinosPaginados } from './tipos'
+import type { Bodega, Cepa, Maridaje, TipoVino, VinosPaginados } from './tipos'
 
 type Filtros = { tipo: string; cepa: string; bodega: string; anada: string }
 const vacios = (): Filtros => ({ tipo: '', cepa: '', bodega: '', anada: '' })
@@ -19,6 +19,7 @@ export default function CatalogoVinos() {
   const [errorFiltro, setErrorFiltro] = useState<string | null>(null)
   const [bodegas, setBodegas] = useState<Bodega[]>([])
   const [cepas, setCepas] = useState<Cepa[]>([])
+  const [maridajes, setMaridajes] = useState<Maridaje[]>([])
   const [errorCatalogos, setErrorCatalogos] = useState<string | null>(null)
 
   useEffect(() => {
@@ -27,10 +28,12 @@ export default function CatalogoVinos() {
       const resultados = await Promise.allSettled([
         solicitarApi<Bodega[]>('/bodegas'),
         solicitarApi<Cepa[]>('/cepas'),
+        solicitarApi<Maridaje[]>('/maridajes'),
       ])
       if (!activo) return
       if (resultados[0].status === 'fulfilled') setBodegas(resultados[0].value)
       if (resultados[1].status === 'fulfilled') setCepas(resultados[1].value)
+      if (resultados[2].status === 'fulfilled') setMaridajes(resultados[2].value)
       if (resultados.some((r) => r.status === 'rejected')) {
         setErrorCatalogos('No se pudieron cargar todos los selectores. Podés reintentar recargando la página.')
       }
@@ -79,7 +82,7 @@ export default function CatalogoVinos() {
 
   return <main>
     <h2>Catálogo de vinos</h2>
-    <p><Link to="/vinos/nuevo">Registrar nuevo vino</Link></p>
+    <p>Catálogo público de solo lectura. El alta y la edición de vinos están deshabilitadas en este despliegue.</p>
     <h3>Filtros</h3>
     {errorCatalogos && <p role="alert">{errorCatalogos}</p>}
     <form onSubmit={aplicar}>
@@ -103,6 +106,12 @@ export default function CatalogoVinos() {
       <button type="submit">Aplicar filtros</button>
       <button type="button" onClick={limpiar}>Limpiar filtros</button>
     </form>
+    <details>
+      <summary>Consultar catálogo auxiliar de maridajes</summary>
+      {maridajes.length > 0
+        ? <ul>{maridajes.map((m) => <li key={m.id_maridaje}>{m.nombre} — {m.temperatura_servicio_c} °C</li>)}</ul>
+        : <p>No hay maridajes disponibles para mostrar.</p>}
+    </details>
     {errorFiltro && <p role="alert">{errorFiltro}</p>}
     {cargando && <p role="status">Cargando vinos...</p>}
     {!cargando && error && <div role="alert"><p>{error}</p><button type="button" onClick={() => { setCargando(true); setRevision((n) => n + 1) }}>Reintentar</button></div>}
@@ -112,7 +121,7 @@ export default function CatalogoVinos() {
         <thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Añada</th><th>Volumen (ml)</th><th>Graduación</th><th>Precio</th><th>Bodega (CUIT)</th><th>Acciones</th></tr></thead>
         <tbody>{datos.items.map((v) => <tr key={v.cod_vino}>
           <td>{v.cod_vino}</td><td>{v.nombre}</td><td>{v.tipo}</td><td>{v.anada}</td><td>{v.volumen_ml}</td><td>{v.graduacion}%</td><td>${v.precio}</td><td>{v.cuit_bodega}</td>
-          <td><Link to={`/vinos/${v.cod_vino}`}>Ver detalle</Link> | <Link to={`/vinos/${v.cod_vino}/editar`}>Editar</Link></td>
+          <td><Link to={`/vinos/${v.cod_vino}`}>Ver detalle</Link></td>
         </tr>)}</tbody>
       </table>}
       <nav aria-label="Paginación de vinos">
