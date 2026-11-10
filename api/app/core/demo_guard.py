@@ -74,6 +74,19 @@ def validar_configuracion_demo() -> None:
         raise ConfiguracionDemoInsegura("Modo local no admitido para host remoto")
 
 
+def _bearer_valido(authorization: str, esperado: str) -> bool:
+    """Validacion constante en bytes; evita TypeError con caracteres no ASCII."""
+    esquema, separador, recibido = authorization.partition(" ")
+    return (
+        separador == " "
+        and esquema.lower() == "bearer"
+        and hmac.compare_digest(
+            recibido.strip().encode("utf-8"),
+            esperado.encode("utf-8"),
+        )
+    )
+
+
 def _permitido(metodo: str, ruta: str) -> bool:
     if metodo in ("GET", "HEAD"):
         return (ruta in _LECTURAS_AUTENTICADAS
@@ -105,10 +118,8 @@ class GuardianDemoAislada(BaseHTTPMiddleware):
                                 headers={"Cache-Control": "no-store"})
 
         authorization = request.headers.get("authorization", "")
-        esquema, _, recibido = authorization.partition(" ")
         esperado = os.environ["FASE8_DEMO_TOKEN"]
-        if (esquema.lower() != "bearer" or
-                not hmac.compare_digest(recibido.strip(), esperado)):
+        if not _bearer_valido(authorization, esperado):
             return JSONResponse(status_code=401,
                                 content={"error": {"codigo": "DEMO_NO_AUTORIZADA"}},
                                 headers={"WWW-Authenticate": "Bearer",
