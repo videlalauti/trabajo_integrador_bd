@@ -17,7 +17,7 @@
 
 1. El **destino no fue consultado remotamente por el auditor**; las filas del CSV destino se transcribieron exactamente de la salida `psql --csv` aportada por Valentino en conversación. Los conteos de origen sí proceden de SQL directo sobre Supabase.
 2. La lectura del origen es posterior al respaldo; no se ha acreditado coincidencia de snapshot temporal exacto, aunque sus conteos coinciden.
-3. Igualdad de conteos **no implica igualdad de contenido por fila**, verificación de los 32 FK/triggers **en el destino** ni equivalencia de roles/ACL (el restore reportado usó `--no-owner --no-acl`).
+3. Igualdad de conteos **no implica igualdad de contenido por fila**. Posteriormente **sí se verificaron en el destino** los 32 FK, los 11 triggers y otros controles: **15/15 métricas numéricas iguales** en [`ESTRUCTURA_FULL_DESTINO_LOCAL_2026-11-10.csv`](ESTRUCTURA_FULL_DESTINO_LOCAL_2026-11-10.csv), cotejadas con [`ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv`](ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv). No demuestra identidad de definiciones/ACL (`--no-owner --no-acl`).
 4. Falta adjuntar código de salida/log real del `pg_restore` y el inventario `pg_restore -l` del dump. No ejecutar una nueva restauración solo para generar evidencia.
 
-**Conclusión:** **APROBADO — conteos 27/27 de origen y destino**. **Pendiente de cierre integral**: inventario estructural/roles del destino, registro primario del restore y controles de seguridad.
+**Conclusión:** **APROBADO — conteos 27/27 de origen y destino**. **Pendiente de cierre integral**: definiciones/propietarios/ACL del destino, registro primario del restore y controles de seguridad; inventario numérico estructural del destino 15/15 sí comprobado.
