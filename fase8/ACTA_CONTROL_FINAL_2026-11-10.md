@@ -13,7 +13,7 @@
 | TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **CONFIGURADO**; falta conexión fallida desde IP no autorizada |
 | Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **PARCIAL**: auditoría exhaustiva del historial Git pendiente |
 | Rol mínimo de API | `bodega_api`, no propietario; TLS y rol efectivo revisados vía healthcheck y roles | **CUMPLIDO EN EJECUCIÓN** |
-| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **PARCIALMENTE ACREDITADO**: archivo, tamaño y SHA-256 informados por cálculo local; falta log y comparación 27 conteos del destino |
+| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **CONTEOS 27/27 COINCIDENTES**: origen verificado con SQL directo, destino obtenido de salida PostgreSQL 17.11 local aportada por Valentino; hash y tamaño informados por cálculo local. Falta log/inventario y auditoría estructural posrestore. |
 | Regla de negocio cloud, con captura | Render DEMO: venta n.º3, rechazo RN-09 409/P0001 y transferencia n.º2 `procesado`; auditadas por SQL READ ONLY | **CUMPLIDO** |
 | README reproducible + URLs | Actualizado en Draft PR #23, junto con `CIERRE_Y_EVIDENCIAS.md` | **PREPARADO**; pendiente revisión/fusión |
 | Cualquier persona abre URL y usa sistema | Catálogo y reportes accesibles con H1; para escrituras se usa API demo con token y datos ficticios | **ALCANCE POR CONFIRMAR CON CÁTEDRA** |
@@ -50,7 +50,7 @@ Se ejecutó el SQL **solo SELECT** `fase8/verificacion/sql/01_conteos_public.sql
 
 Ejemplos: `cliente=20000`, `comprobante=150000`, `renglon_comprobante=500000`, `vino=750`, `ingreso=2000`, `transferencia=2000`, `stock_deposito=750`, `stock_sala=7255`.
 
-**Límite fundamental:** este CSV es una **lectura actual del origen**; **NO ES** una medición del destino restaurado ni está demostrado que provenga del mismo snapshot exacto del `pg_dump`. La igualdad real origen–destino **NO** se declara hasta adjuntar el resultado de la base local.
+**Comparación completada:** Valentino ejecutó el mismo SQL mediante `docker exec` sobre la base local `bodegas_g1c_final_full` (PostgreSQL 17.11) y aportó las 27 filas. La salida se conserva en [`evidencias/CONTEOS_FULL_DESTINO_LOCAL_2026-11-10.csv`](evidencias/CONTEOS_FULL_DESTINO_LOCAL_2026-11-10.csv) y su evaluación en [`evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md`](evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md). **Resultado: 27/27 conteos exactamente iguales.** El auditor obtuvo el CSV de destino de la salida proporcionada por coordinación, no de conexión directa a Docker. El corte de origen fue posterior al dump; **NO** se acredita todavía igualdad de snapshot o de contenido por fila.
 
 ## 3. Restore FULL — datos ya conocidos y falta exacta
 
@@ -63,7 +63,7 @@ Ejemplos: `cliente=20000`, `comprobante=150000`, `renglon_comprobante=500000`, `
 | Restore reportado | Correcto; opciones `--no-owner --no-acl --clean --if-exists --exit-on-error` solo destino local |
 | SHA-256 **del dump final** | `B5E48E30A0AB0011E99DD2FA3664C0C315B15BC5F4C7196EA3106A6571BED055` — valor comunicado por Valentino tras ejecutar `Get-FileHash -Algorithm SHA256` sobre el dump final, **formato hexadecimal de 64 caracteres validado**. Pendiente de corroboración independiente contra el mismo archivo, si se requiere |
 | Código de salida + log `pg_restore` | **FALTA como evidencia primaria** |
-| 27 conteos destino + comparador contra origen | **FALTA** |
+| 27 conteos destino + comparador contra origen | **27/27 COINCIDEN**: CSV real del Docker local aportado por Valentino, transcrito y cotejado línea a línea contra CSV de Supabase; [acta comparativa](evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md). Comparación temporal y contenido por fila no demostrados |
 | Propietarios/ACL del destino | **No equivalentes automáticamente** con `--no-owner --no-acl` |
 
 **Trazabilidad del SHA:** no se obtuvo del servidor Supabase ni del repositorio: es el hash SHA-256 calculado por el coordinador en su PC y transmitido en el chat el 10/11/2026. Coincide el nombre y el tamaño que mostró PowerShell; la existencia y contenido del archivo no fueron inspeccionados por esta auditoría. No reemplazar el hash por el correspondiente al dump previo a logística (`g1c_prelogistica_...`).
@@ -86,6 +86,8 @@ Get-Content .\fase8\verificacion\sql\01_conteos_public.sql -Raw |
   docker exec -i bodegas-g1c-restauracion-pg17 psql -U postgres -d bodegas_g1c_final_full -X --csv -v ON_ERROR_STOP=1 |
   Set-Content -Path "$env:TEMP\fase8_conteos_destino.csv" -Encoding utf8
 ```
+
+**Comparación realizada mediante los dos CSV versionados con resultado 27/27 idéntico.** La sección siguiente documenta una verificación local opcional si se requiere reproducir la comparación con el script estricto; no hace falta repetirla para obtener otra evidencia:
 
 Para comparar, obtener el CSV de origen de este PR y usar el comparador estricto ya versionado:
 ```powershell
@@ -114,7 +116,7 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] Pruebas autenticación demo 401/401/403 y preflight autenticado.
 - [x] Nombre, tamaño y SHA-256 del dump FINAL **informados mediante salida de PowerShell**, con formato SHA-256 válido; corroboración independiente opcional sobre el archivo original.
 - [ ] Inventario `pg_restore -l` y log primario con código de salida.
-- [ ] Conteos 27/27 de la **base LOCAL ya restaurada** y salida comparador.
+- [x] Conteos **27/27** de la **base LOCAL restaurada**, proporcionados como salida CSV de PowerShell y comparados exactamente contra Supabase FULL; evidencia y acta publicadas.
 - [ ] Prueba negativa de red desde IP externa.
 - [ ] Análisis completo del historial Git (no solamente PRs).
 - [ ] Revisión y fusión **controlada** de PR #23; PR #22 de la demo permanece separado.
