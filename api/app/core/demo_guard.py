@@ -111,7 +111,8 @@ def _permitido(metodo: str, ruta: str) -> bool:
 # Las rutas de la web institucional solo se abren con cookie firmada.
 # El bearer de Antonio conserva su allowlist previa; no se amplía con este cambio.
 _LECTURAS_WEB = frozenset({
-    "/demo/sesion", "/reportes/ventas-por-sala", "/reportes/vinos-sin-stock",
+    "/demo/sesion", "/demo/localidades", "/demo/transportistas",
+    "/reportes/ventas-por-sala", "/reportes/vinos-sin-stock",
     "/reportes/transportista-activo",
 })
 _ESCRITURAS_WEB = frozenset({"/vinos", "/clientes", "/ingresos"})
