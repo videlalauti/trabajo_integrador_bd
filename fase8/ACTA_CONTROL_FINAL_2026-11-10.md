@@ -113,6 +113,8 @@ Los nombres coinciden con el patrón porque `logistica` incluye la cadena `log`;
 
 ## 4. Auditoría preliminar de secretos e IP
 
+**Escaneo ampliado informado por Valentino (10/11/2026):** Gitleaks oficial en Docker `ghcr.io/gitleaks/gitleaks:latest`, sobre el repositorio local, con `git /repo --log-opts="--all" --redact=100` después de actualizar referencias. Salida de resumen: **131 commits escaneados, 3 posibles secretos, código de salida 1**. **Estado: ALERTAS SIN CLASIFICAR.** El código 1 refleja detecciones del escáner y no por sí solo fallo de Docker. No está demostrado si son credenciales reales, pruebas o falsos positivos. **No fusionar PRs ni declarar aprobado el historial de secretos hasta revisar regla, archivo, línea y commit sin revelar coincidencias.** La auditoría documental inicial sobre los 23 PR no sustituye esta nueva detección. No se registran ni se publican valores de posibles secretos en esta acta.
+
 **GitHub — alcance limitado:** se revisaron con patrones de detección las líneas agregadas en los parches de **PR #1–#23**. Los avisos identificados se relacionan con **URLs deliberadamente inválidas de tests en `example.com`**, credenciales de **PostgreSQL efímero local del workflow de CI** y token simulado CI; no se detectó en esta pasada una credencial productiva verificable. Es una revisión heurística de los **parches de PR**, **no cubre** commits directos, blobs eliminados, todos los refs, ni todos los formatos de secreto. **NO declarar “historial completamente limpio”**.
 
 Para auditar **todo** el historial en un clon completo y actualizado con Gitleaks v8.19+ (lectura, sin publicarlo), desde PowerShell en la raíz del repo:
