@@ -1,0 +1,152 @@
+name: Fase 8-9 - PostgreSQL 17 aislado y circuitos reales
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+    paths:
+      - 'api/app/core/demo_guard.py'
+      - 'api/app/demo_main.py'
+      - 'api/tests/test_demo_guard.py'
+      - 'fase8/demo_aislada/**'
+      - '.github/workflows/fase8-demo-postgres17-descartable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  negocios-postgres17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_local_postgres_descartable
+          POSTGRES_DB: bodegas_fase8_demo_local
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d bodegas_fase8_demo_local"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: bodegas_fase8_demo_local
+      PGUSER: postgres
+      PGPASSWORD: ci_local_postgres_descartable
+      PROFILE: small
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_NAME: bodegas_fase8_demo_local
+      DB_USER: bodega_api
+      DB_PASSWORD: ci_local_api_descartable
+      DB_SSLMODE: prefer
+      DB_POOL_MIN: '1'
+      DB_POOL_MAX: '2'
+      FASE8_DEMO_MODE: aislado
+      FASE8_DEMO_LOCAL: '1'
+      FASE8_DEMO_TOKEN: CI_TEST_LOCAL_TOKEN_NUNCA_PRODUCCION_abcdefghijklmnopqrstuvwx
+      FASE8_DEMO_URL: http://127.0.0.1:8002
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: api/requirements.txt
+
+      - name: Instalar cliente PostgreSQL y dependencias
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          python -m pip install -r api/requirements.txt Faker
+
+      - name: Confirmar que el servidor es LOCAL y DESCARTABLE
+        run: |
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = "bodegas_fase8_demo_local"
+          psql -X -v ON_ERROR_STOP=1 -Atc "SELECT current_database(), current_user, current_setting('server_version_num');"
+
+      - name: Migraciones 001 a 008 estrictamente en orden
+        run: |
+          set -eu
+          for file in \
+            db/migrations/001_esquema.sql \
+            db/migrations/002_constraints.sql \
+            db/migrations/003_funciones.sql \
+            db/migrations/004_procedimientos.sql \
+            db/migrations/005_triggers.sql \
+            db/migrations/006_vistas.sql \
+            db/migrations/007_roles.sql \
+            db/migrations/008_indices.sql
+          do
+            echo "MIGRACION: $file"
+            psql -X -v ON_ERROR_STOP=1 -f "$file" > /tmp/ultima_migracion.log
+          done
+          echo "Migraciones completadas en PostgreSQL local descartable"
+
+      - name: Establecer password FICTICIA de bodega_api en CI
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -c "ALTER ROLE bodega_api LOGIN PASSWORD 'ci_local_api_descartable';"
+          test "$(psql -X -Atc "SELECT rolcanlogin FROM pg_roles WHERE rolname='bodega_api'")" = "t"
+
+      - name: Seed SMALL unicamente en base CI
+        run: |
+          test "$PGDATABASE" = "bodegas_fase8_demo_local"
+          python db/seed/run_seed.py --check
+          python db/seed/run_seed.py --run
+
+      - name: Arrancar la API de DEMO local, NO app.main productiva
+        run: |
+          set -eu
+          cd api
+          python -m uvicorn app.demo_main:app --host 127.0.0.1 --port 8002 > /tmp/demo_api_log.txt 2>&1 &
+          echo $! > /tmp/demo_api.pid
+          cd ..
+          ok=0
+          for n in $(seq 1 35); do
+            if curl --silent --fail --max-time 3 http://127.0.0.1:8002/salud >/tmp/salud_demo.json; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ok" != 1 ]; then
+            echo "API no arranco; salida redactada:"
+            tail -35 /tmp/demo_api_log.txt
+            exit 1
+          fi
+          echo "API de ensayo saludable en loopback"
+
+      - name: Preflight (solo GET)
+        run: python fase8/demo_aislada/ejecutar_demo.py
+
+      - name: Venta valida, RN-09 rollback y transferencia - UNA SOLA VEZ en CI
+        run: python fase8/demo_aislada/ejecutar_demo.py --ejecutar --confirmar-demo SOLO_BASE_DESCARTABLE
+
+      - name: EXPLAIN ANALYZE BUFFERS de reporte SQL (solo SELECT)
+        env:
+          PGUSER: bodega_api
+          PGPASSWORD: ci_local_api_descartable
+        run: |
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          EXPLAIN (ANALYZE, BUFFERS)
+          SELECT v.cod_vino, v.nombre, SUM(r.cantidad) AS botellas_vendidas
+            FROM public.vino v
+            JOIN public.renglon_comprobante r ON r.cod_vino = v.cod_vino
+           GROUP BY v.cod_vino, v.nombre
+           ORDER BY SUM(r.cantidad) DESC
+           LIMIT 10;
+          SQL
+
+      - name: Comprobacion de H1 de produccion
+        if: always()
+        run: |
+          grep -q 'uvicorn app.main:app' api/Dockerfile
+          grep -q 'BloqueoEscriturasNube' api/app/main.py
+          echo 'No se altero app.main ni Dockerfile de produccion'

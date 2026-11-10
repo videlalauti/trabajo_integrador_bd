@@ -1,0 +1,52 @@
+name: Fase 8-9 - Demo aislada fail-closed sin BD
+
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+    paths:
+      - 'api/app/core/demo_guard.py'
+      - 'api/app/demo_main.py'
+      - 'api/tests/test_demo_guard.py'
+      - 'api/Dockerfile.demo'
+      - 'fase8/demo_aislada/**'
+      - '.github/workflows/fase8-demo-aislada-offline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seguridad-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.13', '3.14']
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      FASE8_DEMO_MODE: ''
+      DB_HOST: '127.0.0.1'
+      FASE8_DEMO_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: api/requirements.txt
+      - name: Instalar dependencias
+        run: python -m pip install -r api/requirements.txt
+      - name: Comprobar sintaxis
+        run: python -m compileall -q api/app/demo_main.py api/app/core/demo_guard.py api/tests/test_demo_guard.py fase8/demo_aislada
+      - name: Autorizacion, aislamiento y circuitos simulados
+        env:
+          PYTHONPATH: api:fase8/demo_aislada
+        run: python -m pytest -q -p no:cacheprovider api/tests/test_demo_guard.py fase8/demo_aislada/test_cli_offline.py fase8/demo_aislada/test_circuitos_simulados.py
+      - name: Confirmar que Docker de produccion conserva app.main
+        run: |
+          grep -q 'uvicorn app.main:app' api/Dockerfile
+          grep -q 'uvicorn app.demo_main:app' api/Dockerfile.demo
+          grep -q 'BloqueoEscriturasNube' api/app/main.py
+          echo 'H1 publico intacto; demo_main usa otro servicio'
