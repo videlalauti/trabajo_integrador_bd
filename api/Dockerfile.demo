@@ -1,0 +1,16 @@
+# SOLO para un SEGUNDO servicio Render de ensayo con otra base Supabase.
+# No sustituye api/Dockerfile ni cambia app.main de produccion.
+FROM python:3.14-slim
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app/ ./app/
+RUN useradd --system --uid 10001 --create-home apiuser \
+    && (getent group 1000 >/dev/null || groupadd --gid 1000 render_secretos) \
+    && usermod -a -G 1000 apiuser
+USER apiuser
+EXPOSE 8000
+# demo_main valida que el proyecto de BD NO sea el FULL antes de abrir pool.
+CMD ["sh", "-c", "exec uvicorn app.demo_main:app --host 0.0.0.0 --port \${PORT:-8000} --workers 1"]
