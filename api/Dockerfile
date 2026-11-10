@@ -12,7 +12,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 
-RUN useradd --system --uid 10001 --create-home apiuser
+# Render monta los Secret Files en /etc/secrets con acceso para el grupo 1000
+# (https://render.com/docs/docker-secrets). La imagen base no trae un grupo con
+# GID 1000: se crea si falta y apiuser se agrega a él. El proceso sigue siendo
+# no privilegiado (no root).
+RUN useradd --system --uid 10001 --create-home apiuser \
+    && (getent group 1000 >/dev/null || groupadd --gid 1000 render_secretos) \
+    && usermod -a -G 1000 apiuser
 
 USER apiuser
 
