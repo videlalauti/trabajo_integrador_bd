@@ -13,7 +13,7 @@
 | TLS y acceso restringido | API demo `/salud` devolvió `tls:true`; Network Restrictions DEMO incluye solo rangos Render `74.220.48.0/24` y `74.220.56.0/24` | **CONFIGURADO**; falta conexión fallida desde IP no autorizada |
 | Secretos en proveedor y fuera de Git | Variables Render ocultas; token demo secreto, RLS y guard; inspección preliminar de PR 1–23 | **PARCIAL**: auditoría exhaustiva del historial Git pendiente |
 | Rol mínimo de API | `bodega_api`, no propietario; TLS y rol efectivo revisados vía healthcheck y roles | **CUMPLIDO EN EJECUCIÓN** |
-| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **CONTEOS 27/27 COINCIDENTES**: origen verificado con SQL directo, destino obtenido de salida PostgreSQL 17.11 local aportada por Valentino; hash y tamaño informados por cálculo local. Falta log/inventario y auditoría estructural posrestore. |
+| Backup, restore en base nueva, conteos | FULL CUSTOM restaurado en PostgreSQL 17.11 local **según informe del equipo** | **CONTEOS 27/27 COINCIDENTES**: origen verificado con SQL directo, destino obtenido de salida PostgreSQL 17.11 local aportada por Valentino; hash y tamaño informados por cálculo local. Falta log/inventario primario del restore y comparación detallada de definiciones/ACL posrestore; **15/15 conteos estructurales ya coinciden**. |
 | Regla de negocio cloud, con captura | Render DEMO: venta n.º3, rechazo RN-09 409/P0001 y transferencia n.º2 `procesado`; auditadas por SQL READ ONLY | **CUMPLIDO** |
 | README reproducible + URLs | Actualizado en Draft PR #23, junto con `CIERRE_Y_EVIDENCIAS.md` | **PREPARADO**; pendiente revisión/fusión |
 | Cualquier persona abre URL y usa sistema | Catálogo y reportes accesibles con H1; para escrituras se usa API demo con token y datos ficticios | **ALCANCE POR CONFIRMAR CON CÁTEDRA** |
@@ -42,11 +42,11 @@ Consulta directa del 10/11/2026, sin modificar datos ni metadatos:
 | Filas con stock de sala negativo | **0** |
 | Filas con stock de depósito negativo | **0** |
 
-Este es el estado **actual del origen FULL** y no demuestra por sí solo que las 32 FK y los 11 triggers hayan sido restaurados en la base local. El contraste posrestore permanece pendiente.
+Este inventario fue obtenido directamente del origen FULL. **El destino local también reportó 32 FK (0 sin validar), 11 triggers (0 deshabilitados) y stock sin negativos**, cotejados posteriormente en los 15 controles del siguiente apartado. La igualdad de inventarios numéricos no prueba que las definiciones individuales sean iguales.
 
 ## 1.3 Inventario estructural ampliado de origen FULL (15 controles)
 
-Se ejecutó adicionalmente un SQL de solo lectura contra la base FULL de Supabase. Se conserva la consulta exacta en [`evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql`](evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql) y el resultado en [`evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv`](evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv). Controles verificados en origen: **27 tablas, 27 PK, 32 FK (0 sin validar), 25 CHECK, 6 UNIQUE, 38 índices, 14 secuencias, 3 vistas, 13 funciones, 4 procedimientos y 11 triggers de usuario (0 deshabilitados), 0 stock negativo**. El inventario equivalente del destino PostgreSQL local aún debe obtenerse para comprobar paridad de objetos; diferencias de dueños, extensiones y ACL pueden ser esperables por la modalidad de restore `--no-owner --no-acl`.
+Se ejecutó adicionalmente un SQL de solo lectura contra la base FULL de Supabase. Se conserva la consulta exacta en [`evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql`](evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql) y el resultado en [`evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv`](evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv). Controles verificados en origen: **27 tablas, 27 PK, 32 FK (0 sin validar), 25 CHECK, 6 UNIQUE, 38 índices, 14 secuencias, 3 vistas, 13 funciones, 4 procedimientos y 11 triggers de usuario (0 deshabilitados), 0 stock negativo**. **Valentino ejecutó el mismo SQL en el Docker local** y compartió la salida CSV: **15/15 controles idénticos**. Se conserva en [`evidencias/ESTRUCTURA_FULL_DESTINO_LOCAL_2026-11-10.csv`](evidencias/ESTRUCTURA_FULL_DESTINO_LOCAL_2026-11-10.csv). Los resultados numéricos se cotejaron línea por línea con la salida de Supabase. **No equivalen a una comparación exacta de definiciones de funciones, vistas, triggers y ACL**; diferencias de propietarios y permisos son esperables con `--no-owner --no-acl`.
 
 ## 2. Conteos de origen FULL obtenidos directamente
 
@@ -121,6 +121,8 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] Nombre, tamaño y SHA-256 del dump FINAL **informados mediante salida de PowerShell**, con formato SHA-256 válido; corroboración independiente opcional sobre el archivo original.
 - [ ] Inventario `pg_restore -l` y log primario con código de salida.
 - [x] Conteos **27/27** de la **base LOCAL restaurada**, proporcionados como salida CSV de PowerShell y comparados exactamente contra Supabase FULL; evidencia y acta publicadas.
+- [x] **15/15 controles estructurales** y stock negativo comparados entre origen y destino, con salida original y copia local documentadas.
+- [ ] Comparación de **definiciones** de objetos y permisos/propietarios, si se exige equivalencia total; las ACL no se restauraron automáticamente.
 - [ ] Prueba negativa de red desde IP externa.
 - [ ] Análisis completo del historial Git (no solamente PRs).
 - [ ] Revisión y fusión **controlada** de PR #23; PR #22 de la demo permanece separado.
