@@ -1,0 +1,65 @@
+name: Fase 8 - DEMO web completa (offline, sin claves)
+on:
+  pull_request:
+    branches:
+      - integracion/fase8
+      - fase8-demo-aislada-candidata
+    paths:
+      - 'api/app/core/demo_guard.py'
+      - 'api/app/core/evaluador.py'
+      - 'api/app/demo_main.py'
+      - 'api/tests/test_demo_guard_web.py'
+      - 'front/**'
+      - '.github/workflows/fase8-demo-web-offline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth-web-sin-bd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      FASE8_EVAL_ENABLED: ''
+      FASE8_EVAL_PASSWORD: ''
+      FASE8_EVAL_SIGNING_KEY: ''
+      DB_HOST: '127.0.0.1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: api/requirements.txt
+      - name: Instalar dependencias API
+        run: python -m pip install -r api/requirements.txt
+      - name: Sintaxis y validaciones de guardian
+        run: python -m compileall -q api/app/core/demo_guard.py api/app/core/evaluador.py api/app/demo_main.py api/tests/test_demo_guard.py api/tests/test_demo_guard_web.py
+      - name: Seguridad previa y sesiones web, sin BD
+        env:
+          PYTHONPATH: api
+        run: python -m pytest -q -p no:cacheprovider api/tests/test_demo_guard.py api/tests/test_demo_guard_web.py
+      - name: Confirmar FULL no modificado por el feature
+        run: |
+          grep -q 'BloqueoEscriturasNube' api/app/main.py
+          grep -q 'uvicorn app.main:app' api/Dockerfile
+          grep -q 'uvicorn app.demo_main:app' api/Dockerfile.demo
+
+  front-formularios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - name: Dependencias front con lockfile
+        run: npm ci --prefix front
+      - name: Compilación TypeScript y Vite
+        run: npm run build --prefix front
+      - name: ESLint
+        run: npm run lint --prefix front
