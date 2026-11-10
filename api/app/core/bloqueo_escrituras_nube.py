@@ -1,6 +1,6 @@
 """Contención temporal del despliegue de lectura de Fase 8.
 
-Con DB_HOST remoto se aplica una lista positiva de GET/HEAD públicos.
+Con DB_HOST remoto, o API_SOLO_LECTURA=true, se aplica una lista positiva de GET/HEAD públicos.
 Todos los demás métodos y endpoints se bloquean antes del router/BD.
 Esta medida NO sustituye autenticación ni autorización por usuario.
 """
@@ -29,7 +29,10 @@ def _get_publico(ruta: str) -> bool:
 class BloqueoEscriturasNube(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         host = os.getenv("DB_HOST", "127.0.0.1").strip().lower()
-        if host in _HOSTS_LOCALES:
+        bandera_lectura = os.getenv("API_SOLO_LECTURA", "").strip().lower() in (
+            "1", "true", "yes", "on"
+        )
+        if host in _HOSTS_LOCALES and not bandera_lectura:
             # Mantiene el funcionamiento local de Fases 6 y 7.
             return await call_next(request)
 
