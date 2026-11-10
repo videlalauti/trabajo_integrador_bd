@@ -4,6 +4,8 @@ import psycopg
 from psycopg_pool import PoolTimeout
 from fastapi import FastAPI
 
+from app.core.bloqueo_escrituras_nube import BloqueoEscriturasNube
+
 from app.core.database import lifespan
 from app.core.errores import manejador_sqlstate
 from app.routers import salud, vinos, comprobantes, ingresos, transferencias, clientes, reportes, salas, catalogos
@@ -14,6 +16,7 @@ app = FastAPI(
     description="Integrador BD - Etapa 6. SQL explícito y reglas de negocio en PostgreSQL.",
     lifespan=lifespan,
 )
+app.add_middleware(BloqueoEscriturasNube)
 app.add_exception_handler(psycopg.Error, manejador_sqlstate)
 app.add_exception_handler(PoolTimeout, manejador_sqlstate)
 app.include_router(salud.router)
