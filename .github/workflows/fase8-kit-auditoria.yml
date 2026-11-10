@@ -45,7 +45,7 @@ jobs:
           import hashlib
           manifest = Path("fase8/verificacion/INVENTARIO_SHA256.txt")
           rows = [row.strip() for row in manifest.read_text(encoding="utf-8").splitlines() if row.strip()]
-          assert len(rows) == 30, f"Se esperaban 30 entradas; hay {len(rows)}"
+          assert len(rows) == 31, f"Se esperaban 31 entradas; hay {len(rows)}"
           for n, line in enumerate(rows, 1):
               path, size, digest = line.split(" | ")
               p = Path(path)
