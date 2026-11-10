@@ -13,6 +13,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.core import evaluador
+
 # Referencia publica del proyecto ya aprobado (no es una credencial).
 PROYECTO_FULL_PROHIBIDO = "sjfyocokehaubuwwbhnw"
 _HOSTS_LOCALES = frozenset({"127.0.0.1", "localhost", "::1", "db", "postgres"})
@@ -44,6 +46,11 @@ def validar_configuracion_demo() -> None:
 
     if len(os.getenv("FASE8_DEMO_TOKEN", "")) < 48:
         raise ConfiguracionDemoInsegura("Falta token largo exclusivo de demostracion")
+    if evaluador.habilitado():
+        try:
+            evaluador.configuracion_segura()
+        except ValueError as exc:
+            raise ConfiguracionDemoInsegura("Acceso web no configurado") from exc
 
     host = os.getenv("DB_HOST", "").strip().lower()
     user = os.getenv("DB_USER", "").strip()
@@ -100,6 +107,35 @@ def _permitido(metodo: str, ruta: str) -> bool:
     return False
 
 
+
+# Las rutas de la web institucional solo se abren con cookie firmada.
+# El bearer de Antonio conserva su allowlist previa; no se amplía con este cambio.
+_LECTURAS_WEB = frozenset({
+    "/demo/sesion", "/reportes/ventas-por-sala", "/reportes/vinos-sin-stock",
+    "/reportes/transportista-activo",
+})
+_ESCRITURAS_WEB = frozenset({"/vinos", "/clientes", "/ingresos"})
+_RE_INGRESO = re.compile(rf"/ingresos/{_NUM}")
+_RE_PASO_INGRESO = re.compile(rf"/ingresos/{_NUM}/(?:renglones|terminar|procesar)")
+_RE_TRAZABILIDAD = re.compile(rf"/reportes/trazabilidad/{_NUM}")
+
+
+def _permitido_web(metodo: str, ruta: str) -> bool:
+    if _permitido(metodo, ruta):
+        return True
+    if metodo in ("GET", "HEAD"):
+        return (ruta in _LECTURAS_WEB or
+                bool(_RE_INGRESO.fullmatch(ruta)) or
+                bool(_RE_TRAZABILIDAD.fullmatch(ruta)))
+    if metodo == "POST":
+        return ruta in _ESCRITURAS_WEB or bool(_RE_PASO_INGRESO.fullmatch(ruta)) or ruta == "/demo/salir"
+    if metodo == "PUT":
+        return bool(_RE_VINO.fullmatch(ruta)) or bool(_RE_CLIENTE.fullmatch(ruta))
+    if metodo == "DELETE":
+        return bool(_RE_VINO.fullmatch(ruta)) or bool(_RE_CLIENTE.fullmatch(ruta))
+    return False
+
+
 class GuardianDemoAislada(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
@@ -112,19 +148,41 @@ class GuardianDemoAislada(BaseHTTPMiddleware):
         metodo, ruta = request.method.upper(), request.url.path
         if ruta == "/salud" and metodo in ("GET", "HEAD"):
             return await call_next(request)
-        if not _permitido(metodo, ruta):
+        # Inicio de sesión web: solo si está habilitado y validado por la config;
+        # el endpoint confirma el secreto y aplica limitación de intentos.
+        if ruta == "/demo/acceso" and metodo == "POST" and evaluador.habilitado():
+            resp = await call_next(request)
+            resp.headers["Cache-Control"] = "no-store"
+            return resp
+
+        legacy = _permitido(metodo, ruta)
+        web = evaluador.habilitado() and _permitido_web(metodo, ruta)
+        if not legacy and not web:
             return JSONResponse(status_code=403,
                                 content={"error": {"codigo": "RUTA_DEMO_BLOQUEADA"}},
                                 headers={"Cache-Control": "no-store"})
 
-        authorization = request.headers.get("authorization", "")
-        esperado = os.environ["FASE8_DEMO_TOKEN"]
-        if not _bearer_valido(authorization, esperado):
-            return JSONResponse(status_code=401,
-                                content={"error": {"codigo": "DEMO_NO_AUTORIZADA"}},
-                                headers={"WWW-Authenticate": "Bearer",
-                                         "Cache-Control": "no-store"})
+        autorizado_bearer = legacy and _bearer_valido(
+            request.headers.get("authorization", ""),
+            os.environ["FASE8_DEMO_TOKEN"],
+        )
+        if autorizado_bearer:
+            resp = await call_next(request)
+            resp.headers["Cache-Control"] = "no-store"
+            return resp
 
-        resp = await call_next(request)
-        resp.headers["Cache-Control"] = "no-store"
-        return resp
+        sesion = request.cookies.get(evaluador.COOKIE)
+        if web and evaluador.validar_sesion(sesion):
+            if metodo not in ("GET", "HEAD") and not evaluador.csrf_valido(
+                sesion, request.headers.get("X-CSRF-Token"),
+            ):
+                return JSONResponse(status_code=403,
+                                    content={"error": {"codigo": "CSRF_INVALIDO"}},
+                                    headers={"Cache-Control": "no-store"})
+            resp = await call_next(request)
+            resp.headers["Cache-Control"] = "no-store"
+            return resp
+
+        return JSONResponse(status_code=401,
+                            content={"error": {"codigo": "DEMO_NO_AUTORIZADA"}},
+                            headers={"Cache-Control": "no-store"})
