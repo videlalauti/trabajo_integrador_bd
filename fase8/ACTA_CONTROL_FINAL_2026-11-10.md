@@ -65,8 +65,9 @@ Ejemplos: `cliente=20000`, `comprobante=150000`, `renglon_comprobante=500000`, `
 | Formato/alcance reportados | CUSTOM / `public` |
 | Destino local reportado | Contenedor `bodegas-g1c-restauracion-pg17`, BD `bodegas_g1c_final_full`, PostgreSQL 17.11 |
 | Restore reportado | Correcto; opciones `--no-owner --no-acl --clean --if-exists --exit-on-error` solo destino local |
+| Inspección del inventario del dump | **VERIFICADA POR SALIDA LOCAL APORTADA (10/11/2026)**: `pg_restore (PostgreSQL) 18.6` pudo leer el archivo CUSTOM y mostró los últimos 15 objetos tipo `FK CONSTRAINT public ...`, entre ellos `fk_vino_bodega`, `fk_stock_sala_vino`, `fk_renglon_transferencia_vino`; la selección `-Last 15` no acredita el TOC completo. El cliente 18.6 es distinto del servidor 17.11 restaurado |
 | SHA-256 **del dump final** | `B5E48E30A0AB0011E99DD2FA3664C0C315B15BC5F4C7196EA3106A6571BED055` — valor comunicado por Valentino tras ejecutar `Get-FileHash -Algorithm SHA256` sobre el dump final, **formato hexadecimal de 64 caracteres validado**. Pendiente de corroboración independiente contra el mismo archivo, si se requiere |
-| Código de salida + log `pg_restore` | **FALTA como evidencia primaria** |
+| Código de salida + log de la ejecución original de `pg_restore` | **FALTA como evidencia primaria**; la inspección posterior `pg_restore --list` tuvo salida exitosa, pero **no prueba el código de salida de la restauración histórica** |
 | 27 conteos destino + comparador contra origen | **27/27 COINCIDEN**: CSV real del Docker local aportado por Valentino, transcrito y cotejado línea a línea contra CSV de Supabase; [acta comparativa](evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md). Comparación temporal y contenido por fila no demostrados |
 | Propietarios/ACL del destino | **No equivalentes automáticamente** con `--no-owner --no-acl` |
 
@@ -119,7 +120,8 @@ Si la utilidad no está instalada, documentar la ausencia y usar otro análisis 
 - [x] Venta, RN-09 y transferencia 3/3 DEMO cloud verificadas; no repetir POST.
 - [x] Pruebas autenticación demo 401/401/403 y preflight autenticado.
 - [x] Nombre, tamaño y SHA-256 del dump FINAL **informados mediante salida de PowerShell**, con formato SHA-256 válido; corroboración independiente opcional sobre el archivo original.
-- [ ] Inventario `pg_restore -l` y log primario con código de salida.
+- [x] Apertura y lectura del dump definitivo con `pg_restore --list` en PowerShell (cliente 18.6), evidenciada por los últimos 15 ítems de FK; obtener inventario completo si hace falta.
+- [ ] Log primario de la ejecución de restauración y código de salida auténtico (no derivable del `--list` posterior).
 - [x] Conteos **27/27** de la **base LOCAL restaurada**, proporcionados como salida CSV de PowerShell y comparados exactamente contra Supabase FULL; evidencia y acta publicadas.
 - [x] **15/15 controles estructurales** y stock negativo comparados entre origen y destino, con salida original y copia local documentadas.
 - [ ] Comparación de **definiciones** de objetos y permisos/propietarios, si se exige equivalencia total; las ACL no se restauraron automáticamente.
