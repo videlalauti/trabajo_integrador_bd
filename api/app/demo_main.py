@@ -94,6 +94,29 @@ async def salir_evaluador():
     return respuesta
 
 
+@app.get("/demo/localidades")
+async def catalogo_localidades(request: Request):
+    """Selector institucional sin datos sensibles, solo DEMO autenticada."""
+    async with request.app.state.db_pool.connection() as conn:
+        cursor = await conn.execute(
+            "SELECT id_localidad, nombre, provincia FROM public.localidad "
+            "ORDER BY nombre, id_localidad LIMIT 300"
+        )
+        filas = await cursor.fetchall()
+    return [{"id_localidad": f[0], "nombre": f[1], "provincia": f[2]} for f in filas]
+
+
+@app.get("/demo/transportistas")
+async def catalogo_transportistas(request: Request):
+    async with request.app.state.db_pool.connection() as conn:
+        cursor = await conn.execute(
+            "SELECT cod_transporte, razon_social FROM public.transportista "
+            "ORDER BY razon_social, cod_transporte LIMIT 300"
+        )
+        filas = await cursor.fetchall()
+    return [{"cod_transporte": f[0], "razon_social": f[1]} for f in filas]
+
+
 # Endpoints exclusivamente de demostracion: no alterar app.main. Solo
 # devuelven agregados e identificadores ficticios desde la base aislada.
 @app.get("/demo/identidad")
