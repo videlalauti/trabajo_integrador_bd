@@ -47,6 +47,15 @@ El workflow de GitHub Actions repite los tests en Python 3.13 y 3.14. Estos test
 
 Fuente: TPI_Bodegas_del_Atuel.pdf (Etapas 8 y 9); docs vigentes de Render Free y Supabase Free consultados el 10/11/2026.
 
+## Estado de infraestructura Supabase DEMO (10/11/2026)
+
+- Organización seleccionada por coordinación: `ValentinoUTN`; costo de alta confirmado por Supabase: **US$0 mensuales**.
+- Proyecto aislado creado: `bodegas-atuel-demo-aislada`, referencia **`zfxocudcvriicrzgmxie`**, región **`us-west-1`**, PostgreSQL **17.11**.
+- Proyecto productivo FULL diferente: `sjfyocokehaubuwwbhnw` (region `us-west-2`); permanece protegido con H1.
+- Control inmediato del proyecto nuevo: estado `ACTIVE_HEALTHY`, `current_database()=postgres`, esquema `public` con **0 tablas de usuario**.
+- AÚN NO se aplicaron migraciones ni datos ficticios, no se asignó contraseña al rol bodega_api, no se configuraron Network Restrictions ni se creó un segundo Render.
+- **Próximo gate:** auditar las ocho migraciones para Supabase y preparar permisos, SSL y dataset de muestra solo en el segundo proyecto. No ejecutar por accidente instrucciones de instalación sobre el proyecto FULL.
+
 ## Evidencia real de PostgreSQL descartable en CI (10/11/2026)
 
 - [GitHub Actions, ejecución completa](https://github.com/videlalauti/trabajo_integrador_bd/actions/runs/42840387018): 8 migraciones reales, perfil small, API FastAPI alternativa autenticada, venta 201, rechazo RN-09 409/P0001 con conteos y stock invariantes, transferencia procesada y EXPLAIN (ANALYZE, BUFFERS) de una consulta SELECT; **SUCCESS**.
