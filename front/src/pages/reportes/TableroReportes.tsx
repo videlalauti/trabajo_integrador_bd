@@ -39,8 +39,8 @@ export default function TableroReportes() {
 
   return (
     <main className="tablero-reportes">
-      <h2>Ranking público de vinos</h2>
-      <p>Consulta de solo lectura. Los demás reportes y las operaciones de escritura no están habilitados para visitantes durante H1.</p>
+      <h2>Ranking de vinos</h2>
+      <p>Los resultados provienen de PostgreSQL en la nube. Las operaciones de ventas y transferencias están disponibles desde el menú.</p>
       {cargando && <p role="status">Cargando ranking...</p>}
       {!cargando && error && (
         <div role="alert">
