@@ -67,3 +67,13 @@ def test_remoto_no_se_desactiva_con_env(monkeypatch,prueba):
     cliente,efectos=prueba
     assert cliente.delete('/clientes/1').status_code==403
     assert efectos==[]
+
+
+def test_flag_remoto_bloquea_incluso_si_host_parece_local(monkeypatch, prueba):
+    monkeypatch.setenv('DB_HOST', 'localhost')
+    monkeypatch.setenv('API_SOLO_LECTURA', 'true')
+    cliente, efectos = prueba
+    assert cliente.post('/vinos').status_code == 403
+    assert cliente.get('/clientes').status_code == 403
+    assert cliente.get('/vinos').status_code == 200
+    assert efectos == [('GET', '/vinos')]
