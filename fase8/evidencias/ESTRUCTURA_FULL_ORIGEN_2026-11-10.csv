@@ -1,0 +1,16 @@
+control,valor
+check_constraints,25
+fk_no_validadas,0
+fk_total,32
+funciones_public,13
+indices_public,38
+pk,27
+procedimientos_public,4
+secuencias_public,14
+stock_deposito_negativo,0
+stock_sala_negativo,0
+tablas_public,27
+triggers_deshabilitados,0
+triggers_usuario,11
+unique_constraints,6
+vistas_public,3
