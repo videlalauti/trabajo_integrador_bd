@@ -129,6 +129,21 @@ jobs:
       - name: Venta valida, RN-09 rollback y transferencia - UNA SOLA VEZ en CI
         run: python fase8/demo_aislada/ejecutar_demo.py --ejecutar --confirmar-demo SOLO_BASE_DESCARTABLE
 
+      - name: EXPLAIN ANALYZE BUFFERS de reporte SQL (solo SELECT)
+        env:
+          PGUSER: bodega_api
+          PGPASSWORD: ci_local_api_descartable
+        run: |
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          EXPLAIN (ANALYZE, BUFFERS)
+          SELECT v.cod_vino, v.nombre, SUM(r.cantidad) AS botellas_vendidas
+            FROM public.vino v
+            JOIN public.renglon_comprobante r ON r.cod_vino = v.cod_vino
+           GROUP BY v.cod_vino, v.nombre
+           ORDER BY SUM(r.cantidad) DESC
+           LIMIT 10;
+          SQL
+
       - name: Comprobacion de H1 de produccion
         if: always()
         run: |
