@@ -17,7 +17,7 @@ import NuevaVenta from './pages/ventas/NuevaVenta'
 import ClientesPage from './pages/clientes/ClientesPage'
 import IngresosPage from './pages/ingresos/IngresosPage'
 import TransferenciasPage from './pages/transferencias/TransferenciasPage'
-import TableroReportes from './pages/reportes/TableroReportes'
+import ReportesCompletos from './pages/reportes/ReportesCompletos'
 import { establecerCsrfSesion } from './lib/api'
 
 type RespuestaSesion = { autorizado: boolean; csrf: string }
@@ -197,7 +197,7 @@ function App() {
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/ingresos" element={<IngresosPage />} />
         <Route path="/transferencias" element={<TransferenciasPage />} />
-        <Route path="/reportes" element={<TableroReportes />} />
+        <Route path="/reportes" element={<ReportesCompletos />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
