@@ -83,3 +83,12 @@ git status --short -uall
 ## Restricciones
 
 No subir ZIP de revisiones, `dist/`, `node_modules/`, `.env` o credenciales. No fusionar el Draft PR ni desplegar sin aprobación de Valentino. No modificar otros módulos ni el README raíz por este PR.
+
+## Revisión adicional — 2026-11-10
+
+- En `front/src/App.tsx` se actualizó el encabezado visual de «Sistema de gestión — Fase 7» a «Sistema de gestión — Fase 8» mediante el commit de la misma rama. No se cambiaron rutas ni lógica de negocios.
+- Verificada en el código la ruta relativa `/api` de `solicitarApi`; el destino `http://127.0.0.1:8001` solo existe como proxy local de desarrollo en `vite.config.ts`, y no queda embebido como host de las llamadas de producción.
+- La última comprobación **aportada por Lautaro desde su computadora** fue: Vite 8.3.6, 42 módulos transformados, `npm.cmd --prefix .\\front run build` aprobado (684 ms) y `npm.cmd --prefix .\\front run lint` aprobado (sin errores). Esta salida es **anterior al cambio de etiqueta visual**; repetir ambas pruebas con el commit actualizado y adjuntar su salida.
+- La revisión de los archivos fuente principales y de `vercel.json.example` no detectó contraseñas ni valores de conexión a PostgreSQL para el cliente. Esto **no constituye una auditoría automatizada de secretos del historial completo**; antes de liberar comprobar también los archivos versionados, el bundle generado y las variables configuradas en Vercel.
+- La configuración activa `front/vercel.json` sigue pendiente de la URL HTTPS definitiva de Render. La plantilla inerte no debe renombrarse/publicarse con el marcador sin sustituirlo por el origen real.
+- El Draft PR queda abierto para revisión, **sin merge y sin deploy**. La creación/importación efectiva del proyecto Vercel y la URL pública del frontend se verificarán después de la autorización.
