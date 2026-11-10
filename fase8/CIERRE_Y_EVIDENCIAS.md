@@ -1,6 +1,6 @@
 # Fase 8 — Despliegue en la nube y cierre de evidencias
 
-**Documento de coordinación, 10/11/2026. Estado: despliegue público operativo; cierre de aceptación EN CURSO.** No confundir un control configurado con una prueba ejecutada. Fuente de requisitos: `TPI_Bodegas_del_Atuel.pdf`, etapa 8, pp. 18–19; demostración de etapa 9, p. 20.
+**Documento de coordinación, 10/11/2026. Estado: despliegue público operativo; cierre de aceptación EN CURSO.** **Actualización: circuito funcional cloud 3/3 probado mediante HTTPS y auditado de forma independiente.** No confundir un control configurado con una prueba ejecutada. Fuente de requisitos: `TPI_Bodegas_del_Atuel.pdf`, etapa 8, pp. 18–19; demostración de etapa 9, p. 20.
 
 ## 1. Arquitectura realmente desplegada
 
@@ -43,7 +43,7 @@ La comparación y los límites corresponden a las páginas oficiales consultadas
 
 **DEMO:** migraciones 001–006 y 008 originales más adaptación documentada de 007 compatible con Supabase gestionado; 27 tablas, 32 FK y dataset **mínimo sintético**, no un reemplazo de FULL ni el perfil `small`. Archivos y controles del proyecto de ensayo en el [Draft PR #22](https://github.com/videlalauti/trabajo_integrador_bd/pull/22), carpeta `fase8/demo_aislada/sql/`.
 
-Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y transferencia **dentro de una transacción revertida (ROLLBACK)**. En GitHub Actions se probaron circuitos reales por HTTP con PostgreSQL 17 descartable, además de la batería de seguridad y regresión para el SHA indicado. **Eso no sustituye todavía la prueba HTTP del Render DEMO cloud.**
+Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y transferencia **dentro de una transacción revertida (ROLLBACK)**. En GitHub Actions se probaron circuitos reales por HTTP con PostgreSQL 17 descartable, además de la batería de seguridad y regresión para el SHA indicado. **Además, el 10/11/2026 se completó y auditó independientemente la prueba HTTP sobre Render DEMO cloud; consultar sección 7.**
 
 ## 5. Reproducción sin exponer credenciales
 
@@ -66,16 +66,38 @@ Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y tran
 | Migraciones y volumen mínimo cloud | **Verificado en implementaciones**; consolidar log/captura y conteos finales FULL. |
 | TLS, rol mínimo, secretos en proveedor y puerto restringido | **Configurado y parcialmente probado**. DEMO health TLS true y CIDR en Dashboard; falta prueba negativa desde IP no permitida y auditoría histórica de secretos. |
 | Backup `pg_dump`, restauración en base nueva y conteos coincidentes | **Ensayo local informado por el equipo**, evidencia definitiva/hash/conteos de origen-destino **pendientes de consolidación**. No declarar cerrado sin acta reproducible. |
-| Trigger funcionando en nube | Prueba SQL transaccional real en DEMO, revertida; **pendiente** evidencia HTTPS RN-09 desde Render demo con aprobación explícita. |
+| Trigger funcionando en nube | **APROBADO**: venta HTTP 201, RN-09 HTTP 409/P0001 sin filas extra ni cambios de stock y transferencia procesada en API Render DEMO con PostgreSQL cloud; auditoría independiente documentada en sección 7. |
 | README con URL pública y reproducción | Actualización preparada en el Draft PR documental; pendiente integrar y revisar la versión publicada. |
 | Cualquier persona abre URL y usa el sistema | **Parcial**: consulta pública real funcionando, pero las operaciones de escritura quedan restringidas por H1. Confirmar con cátedra si demo separada cumple este criterio. |
 
 ### Próximos gates (sin modificar FULL)
 
-1. **Antonio:** GET sin token `/demo/identidad` y `/vinos` → 401; `/docs` → 403. Si pasa, GET con token de identidad/estado y dry run; **todavía no POST**.
-2. **Coordinación:** autorizar una ventana única de ensayo en DEMO ficticia, registrar venta válida HTTP 201, RN-09 HTTP 409 con stock/conteos invariantes y transferencia procesada; ante respuesta ambigua, STOP sin reintentar.
+1. **Antonio:** completó GET sin token (`401`, `401`, `403`), preflight autenticado y un único ensayo funcional por HTTPS con resultado **3/3**; ya auditado.
+2. **Coordinación:** conservar sin repetir la evidencia del ensayo cloud; mantener el token privado y el entorno H1 protegido. Revisar con cátedra el alcance de la demostración separada.
 3. **Fabricio / Valentino:** cerrar acta de backup/restore sobre una base distinta, con SHA-256 y conteos comparados; guardar evidencias finales sin contraseñas ni dumps sensibles.
 4. **Lautaro:** capturas de Vercel y navegación H1, HTTPS, rewrite y ausencia de operaciones de escritura públicas.
 5. **Equipo:** comprobar bloqueo IP desde origen no permitido, auditar historial Git para secretos, revisar PRs y consolidar README; decidir con cátedra alcance de la demo pública para Fase 8/9.
 
 **Regla de seguridad para el cierre:** sin deshabilitar H1 productivo, sin PR #22 a producción, sin tocar FULL para pruebas de negocio y sin fusionar ni desplegar automáticamente esta documentación.
+
+## 7. Evidencia confirmada: venta, RN-09 y transferencia HTTPS cloud (10/11/2026)
+
+**Ámbito:** exclusivamente API Render DEMO y Supabase `zfxocudcvriicrzgmxie`, datos ficticios. SHA probado `9e7a07af9a7054c38e3a63f45fabca92aec22dcb`. Antonio ejecutó una sola vez el CLI `fase8/demo_aislada/ejecutar_demo.py --ejecutar --confirmar-demo SOLO_BASE_DESCARTABLE`, tras comprobaciones 401/401/403 y preflight autenticado/dry run. No se compartieron secretos.
+
+**Salida observada por Antonio:** `PRECHECK OK`, `VENTA OK: comprobante=3, stock -1`, `RN-09 OK: 409/P0001 y rollback completo`, `TRANSFERENCIA OK: nro=2, deposito -1, sala +1`, `RESULTADO 3/3`. El script comprueba con lecturas HTTP después de cada operación que el rechazo de stock insuficiente no cambie conteos ni stock.
+
+| Verificación | Antes | Después AUDITADO por consulta SQL directa READ ONLY |
+| --- | ---: | ---: |
+| Comprobantes | 0 | **1** (nro. **3**, cliente 1, sala 1) |
+| Renglones de comprobante | 0 | **1** (vino 1, cantidad 1) |
+| Transferencias | 0 | **1** (nro. **2**, estado `procesado`, vino 1, cantidad 1) |
+| Stock vino 1, sala 1 | 30 | **30** (venta -1; transferencia +1) |
+| Stock vino 1, depósito | 120 | **119** (transferencia -1) |
+| Stock total en salas | 165 | **165** |
+| Stock total en depósito | 360 | **359** |
+
+El comprobante 3 presenta subtotal **1.300,00**, descuento **130,00** y total **1.170,00**; fecha de transferencia **2026-11-10**. El intento RN-09 demandó 30 botellas cuando quedaban 29 y devolvió 409/P0001 sin crear segundo comprobante ni consumir stock, acorde a los controles del script y a los conteos finales. Que los números reales empiecen en 3 y 2 no es anomalía: las secuencias consumen valores incluso cuando `ROLLBACK` revierte las filas; el intento RN-09 avanzó la secuencia de comprobantes hasta 4. **No modificar ni reiniciar secuencias.**
+
+**Auditoría READ ONLY de la FULL posterior:** vinos **750**, clientes **20.000**, comprobantes **150.000**, renglones **500.000**, transferencias **2.000**, stock salas **88.538.020** y depósito **22.384.854**, sin cambios respecto de los controles previos. No se ejecutaron escrituras contra FULL.
+
+**Resultado:** **demostración técnica de reglas de negocio en la nube APROBADA** mediante API separada. La Fase 8 en su conjunto **NO** queda automáticamente cerrada: siguen pendientes acta definitiva de respaldo y restauración con SHA/conteos, prueba denegada desde IP no autorizada, auditoría de secretos histórica y confirmación del alcance H1/demo con la cátedra.
