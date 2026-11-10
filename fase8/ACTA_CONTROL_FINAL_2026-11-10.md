@@ -44,6 +44,10 @@ Consulta directa del 10/11/2026, sin modificar datos ni metadatos:
 
 Este es el estado **actual del origen FULL** y no demuestra por sí solo que las 32 FK y los 11 triggers hayan sido restaurados en la base local. El contraste posrestore permanece pendiente.
 
+## 1.3 Inventario estructural ampliado de origen FULL (15 controles)
+
+Se ejecutó adicionalmente un SQL de solo lectura contra la base FULL de Supabase. Se conserva la consulta exacta en [`evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql`](evidencias/SQL_CONTROL_ESTRUCTURAL_SOLO_LECTURA.sql) y el resultado en [`evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv`](evidencias/ESTRUCTURA_FULL_ORIGEN_2026-11-10.csv). Controles verificados en origen: **27 tablas, 27 PK, 32 FK (0 sin validar), 25 CHECK, 6 UNIQUE, 38 índices, 14 secuencias, 3 vistas, 13 funciones, 4 procedimientos y 11 triggers de usuario (0 deshabilitados), 0 stock negativo**. El inventario equivalente del destino PostgreSQL local aún debe obtenerse para comprobar paridad de objetos; diferencias de dueños, extensiones y ACL pueden ser esperables por la modalidad de restore `--no-owner --no-acl`.
+
 ## 2. Conteos de origen FULL obtenidos directamente
 
 Se ejecutó el SQL **solo SELECT** `fase8/verificacion/sql/01_conteos_public.sql` sobre el proyecto productivo el 10/11/2026, **después** de la recuperación FULL reportada por el equipo. Resultado real: **27/27 tablas presentes**, volcado en [`evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv`](evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv).
