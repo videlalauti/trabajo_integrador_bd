@@ -29,6 +29,21 @@ Consulta READ ONLY a `pg_roles` y `pg_class` del 10/11/2026:
 
 Esto evidencia separación entre **usuario de conexión**, **rol propietario** y **protección HTTP**. No se cambió ninguna ACL ni rol.
 
+## 1.2 Integridad estructural y stock del FULL (solo lectura)
+
+Consulta directa del 10/11/2026, sin modificar datos ni metadatos:
+
+| Control FULL | Resultado |
+| --- | ---: |
+| Foreign keys en `public` | **32** |
+| FK sin validar | **0** |
+| Triggers de usuario | **11** |
+| Triggers de usuario deshabilitados | **0** |
+| Filas con stock de sala negativo | **0** |
+| Filas con stock de depósito negativo | **0** |
+
+Este es el estado **actual del origen FULL** y no demuestra por sí solo que las 32 FK y los 11 triggers hayan sido restaurados en la base local. El contraste posrestore permanece pendiente.
+
 ## 2. Conteos de origen FULL obtenidos directamente
 
 Se ejecutó el SQL **solo SELECT** `fase8/verificacion/sql/01_conteos_public.sql` sobre el proyecto productivo el 10/11/2026, **después** de la recuperación FULL reportada por el equipo. Resultado real: **27/27 tablas presentes**, volcado en [`evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv`](evidencias/CONTEOS_FULL_ORIGEN_2026-11-10.csv).
