@@ -67,7 +67,7 @@ Se probó en el PostgreSQL DEMO cloud el circuito de venta válida, RN-09 y tran
 | PostgreSQL en nube; API y frontend públicos HTTPS | **Verificado**: URLs públicas; Render productivo y Vercel, SQL cloud FULL. |
 | Migraciones y volumen mínimo cloud | **Verificado en implementaciones**; consolidar log/captura y conteos finales FULL. |
 | TLS, rol mínimo, secretos en proveedor y puerto restringido | **Configurado y parcialmente probado**. DEMO health TLS true y CIDR en Dashboard; falta prueba negativa desde IP no permitida y auditoría histórica de secretos. |
-| Backup `pg_dump`, restauración en base nueva y conteos coincidentes | **Ensayo local informado por el equipo**, evidencia definitiva/hash/conteos de origen-destino **pendientes de consolidación**. No declarar cerrado sin acta reproducible. |
+| Backup `pg_dump`, restauración en base nueva y conteos coincidentes | **Restauración local informada**; archivo final y tamaño reportados por el equipo; **SHA-256 calculado en PowerShell por Valentino y documentado**. Faltan evidencia primaria de `pg_restore` y 27 conteos del destino restaurado. No declarar cerrado sin acta reproducible. |
 | Trigger funcionando en nube | **APROBADO**: venta HTTP 201, RN-09 HTTP 409/P0001 sin filas extra ni cambios de stock y transferencia procesada en API Render DEMO con PostgreSQL cloud; auditoría independiente documentada en sección 7. |
 | README con URL pública y reproducción | Actualización preparada en el Draft PR documental; pendiente integrar y revisar la versión publicada. |
 | Cualquier persona abre URL y usa el sistema | **Parcial**: consulta pública real funcionando, pero las operaciones de escritura quedan restringidas por H1. Confirmar con cátedra si demo separada cumple este criterio. |
@@ -102,4 +102,4 @@ El comprobante 3 presenta subtotal **1.300,00**, descuento **130,00** y total **
 
 **Auditoría READ ONLY de la FULL posterior:** vinos **750**, clientes **20.000**, comprobantes **150.000**, renglones **500.000**, transferencias **2.000**, stock salas **88.538.020** y depósito **22.384.854**, sin cambios respecto de los controles previos. No se ejecutaron escrituras contra FULL.
 
-**Resultado:** **demostración técnica de reglas de negocio en la nube APROBADA** mediante API separada. La Fase 8 en su conjunto **NO** queda automáticamente cerrada: siguen pendientes acta definitiva de respaldo y restauración con SHA/conteos, prueba denegada desde IP no autorizada, auditoría de secretos histórica y confirmación del alcance H1/demo con la cátedra.
+**Resultado:** **demostración técnica de reglas de negocio en la nube APROBADA** mediante API separada. La Fase 8 en su conjunto **NO** queda automáticamente cerrada: siguen pendientes las evidencias primarias de restauración y los 27 conteos del destino (el SHA del dump ya está informado), prueba denegada desde IP no autorizada, auditoría de secretos histórica y confirmación del alcance H1/demo con la cátedra.
