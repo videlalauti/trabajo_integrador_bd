@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "__URL_HTTPS_RENDER_PENDIENTE__/:path*"
+      "destination": "https://bodegas-atuel-api.onrender.com/:path*"
     },
     {
       "source": "/(.*)",
