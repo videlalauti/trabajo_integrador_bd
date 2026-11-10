@@ -9,11 +9,14 @@ import os
 import psycopg
 from psycopg_pool import PoolTimeout
 from fastapi import FastAPI, Query, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+from app.core import evaluador
 
 from app.core.database import lifespan as lifespan_db
 from app.core.demo_guard import GuardianDemoAislada, validar_configuracion_demo
 from app.core.errores import manejador_sqlstate
-from app.routers import salud, vinos, catalogos, salas, clientes, comprobantes, transferencias, reportes
+from app.routers import salud, vinos, catalogos, salas, clientes, comprobantes, transferencias, reportes, ingresos
 
 
 @asynccontextmanager
@@ -32,8 +35,63 @@ app.add_exception_handler(PoolTimeout, manejador_sqlstate)
 for router in (
     salud.router, vinos.router, catalogos.router, salas.router,
     clientes.router, comprobantes.router, transferencias.router, reportes.router,
+    ingresos.router,
 ):
     app.include_router(router)
+
+
+class ClaveEvaluador(BaseModel):
+    clave: str = Field(min_length=1, max_length=256)
+
+
+@app.post("/demo/acceso")
+async def acceso_evaluador(datos: ClaveEvaluador, request: Request):
+    """Autenticación web; nunca devuelve la clave de evaluación ni el bearer técnico."""
+    origen = request.client.host if request.client else "desconocido"
+    correcta, bloqueada = evaluador.comprobar_clave(datos.clave, origen)
+    if bloqueada:
+        return JSONResponse(
+            status_code=429,
+            content={"error": {"codigo": "INTENTOS_EXCESIVOS"}},
+            headers={"Cache-Control": "no-store", "Retry-After": "900"},
+        )
+    if not correcta:
+        return JSONResponse(
+            status_code=401,
+            content={"error": {"codigo": "CREDENCIALES_INVALIDAS"}},
+            headers={"Cache-Control": "no-store"},
+        )
+
+    sesion = evaluador.crear_sesion()
+    respuesta = JSONResponse(
+        {"autorizado": True, "csrf": evaluador.token_csrf(sesion)},
+        headers={"Cache-Control": "no-store"},
+    )
+    respuesta.set_cookie(
+        evaluador.COOKIE, sesion, max_age=evaluador.DURACION_SEGUNDOS,
+        httponly=True, secure=True, samesite="lax", path="/",
+    )
+    return respuesta
+
+
+@app.get("/demo/sesion")
+async def sesion_evaluador(request: Request):
+    sesion = request.cookies.get(evaluador.COOKIE)
+    if not evaluador.validar_sesion(sesion):
+        return JSONResponse(
+            status_code=401, content={"error": {"codigo": "SESION_INVALIDA"}},
+            headers={"Cache-Control": "no-store"},
+        )
+    return {"autorizado": True, "csrf": evaluador.token_csrf(sesion)}
+
+
+@app.post("/demo/salir")
+async def salir_evaluador():
+    respuesta = JSONResponse({"autorizado": False}, headers={"Cache-Control": "no-store"})
+    respuesta.delete_cookie(
+        evaluador.COOKIE, path="/", secure=True, httponly=True, samesite="lax",
+    )
+    return respuesta
 
 
 # Endpoints exclusivamente de demostracion: no alterar app.main. Solo
