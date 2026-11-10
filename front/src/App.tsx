@@ -14,6 +14,8 @@ import DetalleVino from './pages/vinos/DetalleVino'
 import NuevoVino from './pages/vinos/NuevoVino'
 import EditarVino from './pages/vinos/EditarVino'
 import NuevaVenta from './pages/ventas/NuevaVenta'
+import ClientesPage from './pages/clientes/ClientesPage'
+import IngresosPage from './pages/ingresos/IngresosPage'
 import TransferenciasPage from './pages/transferencias/TransferenciasPage'
 import TableroReportes from './pages/reportes/TableroReportes'
 import { establecerCsrfSesion } from './lib/api'
@@ -25,6 +27,8 @@ const enlaces = [
   { ruta: '/vinos', nombre: 'Catálogo de vinos' },
   { ruta: '/vinos/nuevo', nombre: 'Alta de vinos' },
   { ruta: '/ventas/nueva', nombre: 'Nueva venta' },
+  { ruta: '/clientes', nombre: 'Clientes' },
+  { ruta: '/ingresos', nombre: 'Ingresos al depósito' },
   { ruta: '/transferencias', nombre: 'Transferencias' },
   { ruta: '/reportes', nombre: 'Reportes' },
 ]
@@ -190,6 +194,8 @@ function App() {
         <Route path="/vinos/:cod_vino" element={<DetalleVino />} />
         <Route path="/vinos/:cod_vino/editar" element={<EditarVino />} />
         <Route path="/ventas/nueva" element={<NuevaVenta />} />
+        <Route path="/clientes" element={<ClientesPage />} />
+        <Route path="/ingresos" element={<IngresosPage />} />
         <Route path="/transferencias" element={<TransferenciasPage />} />
         <Route path="/reportes" element={<TableroReportes />} />
         <Route path="*" element={<Navigate to="/" replace />} />
