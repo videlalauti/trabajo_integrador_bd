@@ -2,7 +2,18 @@
 
 Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador de Bases de Datos, Ingeniería en Sistemas de Información. El proyecto abarca el modelado y las reglas de negocio en PostgreSQL, una API REST en FastAPI y una aplicación web en React.
 
-**Estado de esta documentación (7 de noviembre de 2026):** Fases 1–7 implementadas y probadas en local. La integración funcional de la Fase 7 se encuentra en la rama `integracion/fase7`; el despliegue público de la Fase 8 y la entrega integral de la Fase 9 se documentarán cuando estén efectivamente realizados.
+**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas en local; **Fase 8 desplegada en la nube y en proceso de cierre de aceptación**, con frontend y API públicos de solo lectura, base PostgreSQL FULL protegida y una segunda API aislada para ensayos controlados. La Fase 9 y la demostración operativa final siguen pendientes. No se declara terminada la Fase 8 hasta cerrar la evidencia de backup/restauración, controles de seguridad restantes y regla de negocio vía HTTPS.
+
+## Fase 8 — versión pública HTTPS
+
+- **Sitio web:** <https://bodegas-del-atuel.vercel.app>
+- **API pública (H1, solo lectura):** <https://bodegas-atuel-api.onrender.com> — comprobación `GET /salud`, catálogo de vinos y ranking.
+- **Base cloud:** PostgreSQL 17.11 en Supabase, proyecto FULL separado de los datos ficticios de ensayo.
+- **API de ensayo aislada y protegida (no para uso anónimo):** <https://bodegas-atuel-demo-api.onrender.com>. La URL permite únicamente salud sin token; las pruebas de negocio requieren autorización y token privado. **Nunca escribir contra FULL.**
+- **Documento de arquitectura, proveedores, despliegue, seguridad, backup y matriz de aceptación:** [`fase8/CIERRE_Y_EVIDENCIAS.md`](fase8/CIERRE_Y_EVIDENCIAS.md). Distingue lo verificado de lo pendiente.
+- **Código de demo en revisión:** [Draft PR #22](https://github.com/videlalauti/trabajo_integrador_bd/pull/22), separado de producción; commit candidato `9e7a07af9a7054c38e3a63f45fabca92aec22dcb`.
+
+El frontend público mantiene voluntariamente bloqueadas las altas, ventas y transferencias: no se debe desactivar H1 para cumplir la demostración. El circuito de escritura se verifica sobre una segunda base descartable, pendiente de concluir las pruebas cloud HTTPS y de validar con la cátedra el alcance de la presentación.
 
 ## Equipo
 
@@ -194,6 +205,6 @@ trabajo_integrador_bd/
 
 ## Alcance y siguientes fases
 
-La Fase 7 demuestra la integración **local** de los tres niveles y las reglas de negocio visibles en la interfaz. La Fase 8 incorporará el despliegue en la nube y sus evidencias de seguridad, respaldo y restauración. La Fase 9 reunirá el informe final, la URL pública real, la trazabilidad completa de reglas y la defensa del equipo. **No se declara una URL pública hasta haber verificado el despliegue.**
+La Fase 7 demuestra la integración **local** de los tres niveles y las reglas de negocio visibles en la interfaz. La **Fase 8 ya dispone de URLs públicas HTTPS** y de una arquitectura con bases FULL y DEMO separadas, pero su aceptación definitiva exige consolidar seguridad, backup/restauración y prueba de regla de negocio en nube según [matriz de cierre](fase8/CIERRE_Y_EVIDENCIAS.md). La Fase 9 reunirá el informe final, la trazabilidad completa de reglas y la defensa del equipo.
 
 Repositorio: <https://github.com/videlalauti/trabajo_integrador_bd>
