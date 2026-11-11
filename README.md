@@ -2,7 +2,7 @@
 
 Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador de Bases de Datos, Ingeniería en Sistemas de Información. El proyecto abarca el modelado y las reglas de negocio en PostgreSQL, una API REST en FastAPI y una aplicación web en React.
 
-**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas en local; **Fase 8 desplegada en la nube y en proceso de cierre de aceptación**, con frontend y API públicos de solo lectura, base PostgreSQL FULL protegida y una segunda API aislada para ensayos controlados. La Fase 9 y la demostración operativa final siguen pendientes. La regla de negocio ya fue demostrada por HTTPS en la base ficticia aislada. La Fase 8 ya tiene acreditados los controles funcionales, los 27/27 conteos restaurados, los 15/15 controles estructurales, el bloqueo IP y el triage de Gitleaks. Su aceptación final todavía requiere documentar las limitaciones del registro original de restauración y acordar con la cátedra el alcance de la demostración H1 + DEMO.
+**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas; Fase 8 cuenta con dos despliegues HTTPS separados: FULL de solo lectura y DEMO institucional autenticada con operaciones funcionales verificadas en PostgreSQL. El Bloque 4 de DEMO superó los siete escenarios de uso y la URL estable fue probada desde navegador por el equipo. La aceptación documental sigue en curso: falta integrar el PR documental, conservar la evidencia de restauración FULL con sus limitaciones y completar el informe de Fase 9. No se localizó el log primario original de `pg_restore`; no se afirma paridad de propietarios ni ACL.
 
 ## Fase 8 — versión pública HTTPS
 
@@ -14,7 +14,22 @@ Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador
 - **Acta y pendientes de aceptación:** [`fase8/ACTA_CONTROL_FINAL_2026-11-10.md`](fase8/ACTA_CONTROL_FINAL_2026-11-10.md), con 27 conteos reales de FULL y pasos no destructivos para verificar backup/restore.
 - **Código de demo en revisión:** [Draft PR #22](https://github.com/videlalauti/trabajo_integrador_bd/pull/22), separado de producción; commit candidato `9e7a07af9a7054c38e3a63f45fabca92aec22dcb`.
 
-El frontend público mantiene voluntariamente bloqueadas las altas, ventas y transferencias: no se debe desactivar H1 para cumplir la demostración. El circuito de escritura **ya se verificó en la nube** sobre la segunda base ficticia: venta válida, RN-09 y transferencia con auditoría SQL independiente. Corresponde validar con la cátedra el alcance de esta demostración separada.
+La URL FULL conserva H1 de solo lectura. Para todas las operaciones de escritura de evaluación utilizar exclusivamente la **URL institucional DEMO autenticada** indicada abajo, nunca la FULL. La demostración separada resuelve técnicamente el uso del sistema desde navegador; su aceptación formal corresponde a la cátedra.
+
+## Aplicación institucional DEMO (Fase 8: operaciones de escritura)
+
+- **URL para la cátedra:** <https://bodegas-del-atuel-demo-profesores.vercel.app>
+- **Acceso:** iniciar sesión con la contraseña de evaluación proporcionada **por canal privado**. No publicar la clave en el repositorio ni en capturas.
+- **Proyecto Vercel independiente:** `bodegas-del-atuel-demo-profesores`, rama de Production `fase8-vercel-preview-demo-20261110`, commit `9339932a1abe661cc1d026376ae1db72db7036be`.
+- **Frontend:** carpeta `front/`; `front/vercel.json` de esa rama reescribe `/api/:path*` a <https://bodegas-atuel-demo-api.onrender.com/:path*> (API DEMO, nunca FULL).
+- **Backend/base de demostración:** FastAPI `app.demo_main` en Render DEMO, conectado a Supabase DEMO `zfxocudcvriicrzgmxie`, con datos ficticios; el proyecto FULL `sjfyocokehaubuwwbhnw` permanece separado.
+- **Alcance probado:** alta/edición de vinos, composición de cepas y maridajes, clientes, ventas, rechazo RN-09, ingresos, transferencias y cinco reportes. La sesión persiste tras F5 según pruebas de navegador del equipo. Auditoría directa SQL: comprobante 5 total 1.170, venta sala 1 vino 1 30→29, RN-09 dejó vino 2 en 30, ingreso 1 sumó vino 2 en depósito 120→122, transferencia 3 movió vino 3 de depósito 120→119 y sala 2 25→26, precio vino 4 2.000→2.200 auditado por RN-13, asociación maridaje 1 confirmada.
+- **Reportes:** el total 2.340 y ranking de dos botellas corresponden a los comprobantes 3 y 5, cada uno de 1.170; no representan una venta duplicada.
+- **Evidencias de cierre:** [acta de bloque 4 y publicación DEMO](fase8/ACTA_ANEXO_DEMO_PUBLICADA_2026-11-10.md), [acta de backup/restore FULL](fase8/ACTA_CONTROL_FINAL_2026-11-10.md).
+
+**Aislamiento esencial:** el sitio anterior <https://bodegas-del-atuel.vercel.app> continúa en modo H1 de solo lectura. No fusionar ramas DEMO sobre la rama de FULL ni activar escrituras contra FULL. Las operaciones de evaluación requieren autenticación. Se ha reportado verificación funcional desde navegador; la comprobación HTTP independiente desde el entorno documental no fue concluyente por resolución DNS, y no debe confundirse con un fallo demostrado del sitio.
+
+**Estado documental del respaldo:** dump CUSTOM FULL con nombre, tamaño y SHA-256 registrados; restauración en PostgreSQL 17.11 local con comparación **27/27** de conteos y **15/15** controles estructurales. El log primario de `pg_restore` no fue localizado; no se acreditó igualdad exacta de definiciones/ACL/propietarios, particularmente por `--no-owner --no-acl`. El intento de backup DEMO con Docker/PowerShell falló en la configuración TLS y argumentos, y **no constituye un respaldo restaurado válido**.
 
 ## Equipo
 
