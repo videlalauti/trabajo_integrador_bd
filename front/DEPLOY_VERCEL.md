@@ -1,5 +1,14 @@
 # Despliegue de Vercel Hobby — Fase 8 (H1 SOLO LECTURA)
 
+## Nota posterior a la preparación — 10/11/2026
+
+**Estado operativo posterior:** el frontend quedó publicado en **<https://bodegas-del-atuel.vercel.app>**, con backend productivo H1 en **<https://bodegas-atuel-api.onrender.com>**. Este archivo original describía el estado **previo al despliegue** de la propuesta de Lautaro (incluida la frase «NO desplegado» y tareas pendientes), por lo que esos renglones deben leerse como evidencia histórica y no como estado actual.
+
+La arquitectura, los resultados cloud de la demo separada y los controles de aceptación restantes están documentados en [`../fase8/CIERRE_Y_EVIDENCIAS.md`](../fase8/CIERRE_Y_EVIDENCIAS.md) y [`../fase8/ACTA_CONTROL_FINAL_2026-11-10.md`](../fase8/ACTA_CONTROL_FINAL_2026-11-10.md). La prueba HTTP 3/3 de negocio se hizo sobre **Supabase DEMO** y no habilita escrituras en el frontend público. Los ítems de la lista original que requieran capturas de navegador todavía deben contrastarse contra evidencias auténticas.
+
+---
+
+
 **Responsable:** Lautaro. **Estado:** configuración final preparada para revisión. NO desplegado, NO fusionado.
 
 ## Configuración aprobada para revisar
@@ -51,7 +60,7 @@ git status --short -uall
 
 La inspección de las rutas del cliente y de los archivos modificados no muestra contraseñas ni cadena de conexión a PostgreSQL. Antes del despliegue, auditar el historial y el bundle final; no incluir secretos en Vercel.
 
-## Pruebas finales pendientes — con Vercel autorizado
+## Checklist original pre-despliegue — conservar como referencia histórica
 
 - [ ] Proyecto importado en Hobby con GitHub correcto, Root Directory `front`, framework Vite, rama `integracion/fase8`.
 - [ ] Build remoto aprobado y URL de frontend publicada por HTTPS; capturar URL real.
@@ -65,4 +74,4 @@ La inspección de las rutas del cliente y de los archivos modificados no muestra
 - [ ] Verificar HTTPS, mensajes de error y reintento cuando API esté temporalmente indisponible.
 - [ ] Adjuntar capturas auténticas y controles realizados; no inventar resultados.
 
-**No desplegar ni fusionar el Draft PR #14 antes de la revisión de Valentino.**
+**Nota de actualización (10/11/2026):** el PR #14 **ya fue fusionado** en `integracion/fase8` y el frontend ya está publicado en Vercel. La prohibición anterior correspondía exclusivamente a la etapa de preparación y **no es una instrucción operativa vigente**. Las casillas vacías anteriores son el checklist de ese momento; no sustituirlas por capturas o pruebas que no fueron compartidas. Para el estado final consultar [el acta de cierre](../fase8/ACTA_CONTROL_FINAL_2026-11-10.md).
