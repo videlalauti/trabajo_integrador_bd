@@ -2,7 +2,19 @@
 
 Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador de Bases de Datos, Ingeniería en Sistemas de Información. El proyecto abarca el modelado y las reglas de negocio en PostgreSQL, una API REST en FastAPI y una aplicación web en React.
 
-**Estado de esta documentación (10 de noviembre de 2026):** Fases 1–7 implementadas y probadas; Fase 8 cuenta con dos despliegues HTTPS separados: FULL de solo lectura y DEMO institucional autenticada con operaciones funcionales verificadas en PostgreSQL. El Bloque 4 de DEMO superó los siete escenarios de uso y la URL estable fue probada desde navegador por el equipo. La aceptación documental sigue en curso: falta integrar el PR documental, conservar la evidencia de restauración FULL con sus limitaciones y completar el informe de Fase 9. No se localizó el log primario original de `pg_restore`; no se afirma paridad de propietarios ni ACL.
+**Estado del proyecto (10 de noviembre de 2026):** implementación y pruebas de las Fases 1–7 completadas; Fase 8 **cerrada técnicamente**, con frontend y API HTTPS, PostgreSQL FULL de solo lectura y entorno DEMO institucional autenticado para operaciones completas. Las pruebas funcionales en DEMO y los controles de integridad están documentados. El respaldo FULL y su restauración local fueron comprobados mediante 27/27 conteos de tablas y 15/15 controles estructurales coincidentes; se conserva como observación que no se localizó el log original de `pg_restore` ni se verificó equivalencia exacta de ACL y propietarios. El **informe integrador único** (Fases 1–8 y cierre documental de Fase 9) fue aprobado por el equipo y se encuentra pendiente de constatar su publicación en `docs/` de GitHub. No se incluyen aquí la demostración ni la defensa oral, que se realizan presencialmente.
+
+## Entrega documental — Fase 9
+
+La entrega se organiza alrededor de **un único informe integrador**, que reúne el trabajo de las Fases 1–8 y su conclusión final; **no existe un informe de Fase 9 separado**.
+
+- **Informe integrador definitivo:** archivo PDF aprobado por el equipo, destinado a `docs/`. **La presencia del archivo todavía no pudo verificarse en GitHub** en esta revisión. Una vez publicado, enlazar aquí su nombre exacto, sin renombrar ni sustituir otras entregas.
+- **Trazabilidad RN-01 a RN-15:** incluida en la **página 19** del informe integrador final. Se conserva también la [trazabilidad elaborada en Fase 2](docs/fase2_trazabilidad.pdf).
+- **Documentación original de las primeras fases:** `docs/fase1.pdf`, `docs/fase2_informe.pdf`, `docs/fase3_informe.pdf` y `docs/fase4_informe.pdf`. Se mantienen como antecedentes, no como sustitutos del informe único.
+- **Evidencias de Fases 6–7:** `fase6/` y [`fase7/evidencias/`](fase7/evidencias/valentino/).
+- **Despliegue y respaldo FULL:** [acta final de Fase 8](fase8/ACTA_CONTROL_FINAL_2026-11-10.md), [comparación de 27 tablas](fase8/evidencias/COMPARACION_27_TABLAS_FULL_2026-11-10.md) y [anexo de la DEMO institucional](fase8/ACTA_ANEXO_DEMO_PUBLICADA_2026-11-10.md).
+
+El PDF definitivo debe quedar disponible en la rama de entrega utilizada por el equipo. Las pruebas y evidencias se conservan en GitHub; las credenciales de evaluación se facilitan **solo por vía privada**.
 
 ## Fase 8 — versión pública HTTPS
 
@@ -12,7 +24,7 @@ Sistema de gestión de bodegas desarrollado para el Trabajo Práctico Integrador
 - **API de ensayo aislada y protegida (no para uso anónimo):** <https://bodegas-atuel-demo-api.onrender.com>. La URL permite únicamente salud sin token; las pruebas de negocio requieren autorización y token privado. **Nunca escribir contra FULL.**
 - **Informe de Fase 8:** [`fase8/CIERRE_Y_EVIDENCIAS.md`](fase8/CIERRE_Y_EVIDENCIAS.md).
 - **Acta y pendientes de aceptación:** [`fase8/ACTA_CONTROL_FINAL_2026-11-10.md`](fase8/ACTA_CONTROL_FINAL_2026-11-10.md), con 27 conteos reales de FULL y pasos no destructivos para verificar backup/restore.
-- **Código de demo en revisión:** [Draft PR #22](https://github.com/videlalauti/trabajo_integrador_bd/pull/22), separado de producción; commit candidato `9e7a07af9a7054c38e3a63f45fabca92aec22dcb`.
+- **Código de demo separado:** [PR #22](https://github.com/videlalauti/trabajo_integrador_bd/pull/22), separado de producción; commit candidato `9e7a07af9a7054c38e3a63f45fabca92aec22dcb`.
 
 La URL FULL conserva H1 de solo lectura. Para todas las operaciones de escritura de evaluación utilizar exclusivamente la **URL institucional DEMO autenticada** indicada abajo, nunca la FULL. La demostración separada resuelve técnicamente el uso del sistema desde navegador; su aceptación formal corresponde a la cátedra.
 
@@ -213,14 +225,16 @@ trabajo_integrador_bd/
 │   └── seed/                # Carga reproducible y respaldo
 ├── fase6/                   # Inicializador y evidencias de API/Docker
 ├── fase7/evidencias/        # Evidencias funcionales del frontend
+├── fase8/                  # Actas, controles y evidencias de nube
+├── docs/                   # Informes originales y PDF integrador al publicarse
 ├── front/                   # React + TypeScript + Vite + Nginx
 ├── compose.fase6.yml        # PostgreSQL y API
 ├── compose.fase7.yml        # Extensión con frontend
 └── README.md
 ```
 
-## Alcance y siguientes fases
+## Estado final y consideraciones de entrega
 
-La Fase 7 demuestra la integración **local** de los tres niveles y las reglas de negocio visibles en la interfaz. La **Fase 8 ya dispone de URLs públicas HTTPS** y de una arquitectura con bases FULL y DEMO separadas, con la regla de negocio cloud ya probada; su aceptación definitiva exige revisar las evidencias ya reunidas y acordar el alcance H1/demo con la cátedra, sin presentar como disponible el log original del restore, según la [matriz final](fase8/ACTA_CONTROL_FINAL_2026-11-10.md). La Fase 9 reunirá el informe final, la trazabilidad completa de reglas y la defensa del equipo.
+Las Fases 1–7 acreditan el desarrollo progresivo del modelo, los datos, las consultas y la integración local. La Fase 8 incorporó el despliegue en la nube y un entorno DEMO autenticado y separado para ejecutar operaciones sin modificar los datos FULL. **La implementación técnica de Fase 8 se considera concluida**, con evidencia de respaldo y restauración validada por conteos, y una observación documental explícita sobre el log primario del restore y los permisos/propietarios. La Fase 9 reúne el informe único, la trazabilidad y los anexos versionados; resta comprobar la incorporación del PDF definitivo al repositorio antes de cerrar el paquete de entrega. La aceptación académica formal corresponde a la cátedra.
 
 Repositorio: <https://github.com/videlalauti/trabajo_integrador_bd>
